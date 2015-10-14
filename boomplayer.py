@@ -33,14 +33,22 @@ class Boomplayer(object):
 
 
     def get_pCodePath(self, source):
+        """
+        get the pCodePath given the source code of a boomplayer replay
 
-        s = re.search('pCodePath=http://www.boomplayer.com/repository/pCode/0/16/226/[A-Z0-9_]+.xml', source)
+        """
+
+        s = re.search('pCodePath=http://www.boomplayer.com/repository/pCode/[A-Z0-9_]+/[A-Z0-9_]+/[A-Z0-9_]+.xml', source)
 
         if s:
 
             return s.group()[len('pCodePath='):]
 
     def get_pCode(self, boomplayer_url):
+        """ 
+        get the raw pcode xml given the url of a boomplayer replay
+
+        """
 
         source = requests.get(boomplayer_url).content
 
@@ -51,6 +59,12 @@ class Boomplayer(object):
             return requests.get(pCodePath).content
 
     def parse_pCode(self, pCode):
+        """
+        load the raw pCode xml into an ElementTree data structure
+
+        then we would probably do some processing to extract data
+
+        """
 
         root = ElementTree.fromstring(pCode)
 
@@ -68,6 +82,11 @@ if __name__ == "__main__":
     pCode = b.get_pCode('http://www.boomplayer.com/poker-hands/Boom/16226966_600A963870')
 
     et = b.parse_pCode(pCode)
+
+    # .
+    # .
+    # .
+    # .
 
 
 
