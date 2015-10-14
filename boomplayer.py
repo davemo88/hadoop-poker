@@ -54,7 +54,9 @@ class Boomplayer(object):
 
         root = ElementTree.fromstring(pCode)
 
-        game_info = root.find('j')
+        return root
+
+        # game_info = root.find('j')
 
 
 
