@@ -1,0 +1,171 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Journal Article
+% LaTeX Template
+% Version 1.3 (9/9/13)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[twoside]{article}
+
+\usepackage{lipsum} % Package to generate dummy text throughout this template
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\graphicspath{ {figures/} }
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage{multicol} % Used for the two-column layout of the document
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
+\usepackage{hyperref} % For hyperlinks in the PDF
+
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+\usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
+
+\usepackage{abstract} % Allows abstract customization
+\renewcommand{\abstractnamefont}{\normalfont\bfseries} % Set the "Abstract" text to bold
+\renewcommand{\abstracttextfont}{\normalfont\small\itshape} % Set the abstract itself to small italic text
+
+\usepackage{titlesec} % Allows customization of titles
+\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
+\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
+\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the section titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+%%AH\fancyhead[C]{Running title $\bullet$ November 2012 $\bullet$ Vol. XXI, No. 1} % Custom header text
+%%\fancyhead[C]{November 18th, 2014}
+\fancyfoot[RO,LE]{\thepage} % Custom footer text
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{Hadoop Poker: Machine Learning in Texas Hold'em}} % Article title
+
+\author{
+\large
+\textsc{Adrienne Humblet, David Kasofsky}\\[2mm] 
+\normalsize New York University \\ 
+\normalsize{}\\
+\normalsize{}
+\date{}
+\vspace{-5mm}
+}
+
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle{} % Insert title
+
+\thispagestyle{fancy} % All pages have headers and footers
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+\begin{abstract}
+
+\noindent {
+Abstract AbstractAbstractAbstractAbstractAbstractAbstract Abstract Abstract Abstract Abstract
+} 
+
+\end{abstract}
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+
+\begin{multicols}{2} % Two-column layout throughout the main article text
+
+\section{Introduction}
+Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction 
+
+\lettrine[nindent=0em,lines=3]{T}odo
+
+% Dummy text
+
+%------------------------------------------------
+
+\section{Literature Survey}
+
+Literature survey Literature survey Literature survey Literature survey Literature survey Literature survey 
+
+
+%------------------------------------------------
+
+\section{Proposed Idea}
+
+Proposed IdeaProposed IdeaProposed IdeaProposed IdeaProposed IdeaProposed IdeaProposed IdeaProposed Idea
+
+%------------------------------------------------
+
+\section{Experimental Setup}
+
+Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup 
+
+%------------------------------------------------
+
+\section{Experiments and Discussion}
+
+DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion 
+
+%--------------------------------------------
+
+\section{Conclusion}
+
+While the coarse-grained algorithm achieved embarassingly parallel success, it could not match the fitness score of the much less efficient fine-grained algorithm. This suggests that a compromise could be reached. By dividing the population among several cores but still allowing the fittest genomes to breed outside their pools, one can acheive the benefits of highly parallel computation without the limiting population sizes.
+
+%------------------------------------------------
+
+\section{Future Work}
+
+Based on the data collected and the current parallel genetic algorithms research, a distibuted population with selective cross-breeding appears to be the happy medium between a highly parallel system and an effective generative music algorithm. 
+
+
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+
+\begin{thebibliography}{99} % Bibliography - this is intentionally simple in this template
+\bibitem{counterpoint} F. Pachet. Musical Harmonization with Constraints: A Survey. Kluwer Publisher, 6(1):7-19, 2001.
+
+\bibitem{computer composition} J. Moorer. Music and Computer Composition. Commun. ACM 15, 2. February 1972
+
+\bibitem{ILLIAC} M. Edwards. Algorithmic composition: computational thinking in music. Commun. ACM 54, 7 (July 2011), 58-67. 2011  http://doi.acm.org/10.1145/1965724.1965742
+
+\bibitem{markov1} C. Thornton. Markov Modeling for Generative Music. University of Sussex, Brighton UK. http://www.sussex.ac.uk/Users/christ/
+papers/reconstituted-music.pdf
+
+
+
+\end{thebibliography}
+
+%----------------------------------------------------------------------------------------
+
+\end{multicols}
+
+\end{document}
