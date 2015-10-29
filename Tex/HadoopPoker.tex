@@ -68,8 +68,6 @@
 \large
 \textsc{Adrienne Humblet, David Kasofsky}\\[2mm] 
 \normalsize New York University \\ 
-\normalsize{}\\
-\normalsize{}
 \date{}
 \vspace{-5mm}
 }
@@ -90,7 +88,7 @@
 \begin{abstract}
 
 \noindent {
-Abstract AbstractAbstractAbstractAbstractAbstractAbstract Abstract Abstract Abstract Abstract
+Abstract to come...
 } 
 
 \end{abstract}
@@ -101,50 +99,60 @@ Abstract AbstractAbstractAbstractAbstractAbstractAbstract Abstract Abstract Abst
 
 \begin{multicols}{2} % Two-column layout throughout the main article text
 
-\section{Introduction}
-Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction Introduction 
-
-\lettrine[nindent=0em,lines=3]{T}odo
+\section{Introduction} 
+The goal of this analytic is to extract and present information from online poker hand logs. Our analysis would be restricted to No Limit Texas Hold'em, the most popular form of online poker. A single poker site like PokerStars will easily play billions of hands per year and a professional player may play hundreds of thousands if not millions of hands a year. This data can be used for at least the following purposes:
+If one gathers sufficient data about a specific player, patterns in that player's play may become identifiable and thus exploitable when playing against that player.
+Identifying Profitable Strategies. By examining many hands, one can identify which strategies tend to be profitable. Some machine learning algorithm could be used here, e.g. probabilistic classification to come up with a strategy like ``in this case, fold 20 percent of the time and bet 80 percent of the time. Here we'd definitely like the machine learning algorithm to have access to the player statistics gathered in the first example. ``
+By combining statistics about particular players, i.e. the results of the first analysis, with guidelines for profitable play, i.e. the results of the second analysis, one may be to able to evaluate a particular player and identify the strong and weak parts of that player's game.
 
 % Dummy text
 
 %------------------------------------------------
 
-\section{Literature Survey}
+\section{Motivation}
 
-Literature survey Literature survey Literature survey Literature survey Literature survey Literature survey 
+Imperfect information.
+
+%------------------------------------------------
+
+\section{Related Work}
+
+The University of Alberta Poker Research Group has published many papers related to our topic.
+One such paper describes using a support vector machine to train a poker bot on post-flop strategy. Since this yielded effective results, our project aims to extend a similar SVM mechanism for pre-flop strategy. 
+
+%------------------------------------------------
+
+\section{Design}
+
+
+\subsection{Sources}
+We used two sources of poker data. Both came in different formats that we have normalized using Map Reduce. 
+\begin{compactitem}
+\item{Poker Hand History} Our first source is the private hand history of a professional poker player who kindly agreed to donate his data to us. 
+\item{IRC Poker Database} Seven years of poker data has been scraped from a dozen IRC poker channels. 
+\end{compactitem}
+
+\includegraphics[scale=.5]{Flowchart.png}
+Figure1.png
 
 
 %------------------------------------------------
 
-\section{Proposed Idea}
-
-Proposed IdeaProposed IdeaProposed IdeaProposed IdeaProposed IdeaProposed IdeaProposed IdeaProposed Idea
-
-%------------------------------------------------
-
-\section{Experimental Setup}
-
-Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup Experimental setup 
-
-%------------------------------------------------
-
-\section{Experiments and Discussion}
-
-DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion DIscussion 
+\section{Results}
 
 %--------------------------------------------
 
-\section{Conclusion}
-
-While the coarse-grained algorithm achieved embarassingly parallel success, it could not match the fitness score of the much less efficient fine-grained algorithm. This suggests that a compromise could be reached. By dividing the population among several cores but still allowing the fittest genomes to breed outside their pools, one can acheive the benefits of highly parallel computation without the limiting population sizes.
+\section{Future Work}
 
 %------------------------------------------------
 
-\section{Future Work}
+\section{Conclusion}
 
-Based on the data collected and the current parallel genetic algorithms research, a distibuted population with selective cross-breeding appears to be the happy medium between a highly parallel system and an effective generative music algorithm. 
+%------------------------------------------------
 
+\section{Acknowledgements}
+
+Many thanks to Jaime Staples for sending us his hand histories free of charge. 
 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
@@ -154,13 +162,6 @@ Based on the data collected and the current parallel genetic algorithms research
 \bibitem{counterpoint} F. Pachet. Musical Harmonization with Constraints: A Survey. Kluwer Publisher, 6(1):7-19, 2001.
 
 \bibitem{computer composition} J. Moorer. Music and Computer Composition. Commun. ACM 15, 2. February 1972
-
-\bibitem{ILLIAC} M. Edwards. Algorithmic composition: computational thinking in music. Commun. ACM 54, 7 (July 2011), 58-67. 2011  http://doi.acm.org/10.1145/1965724.1965742
-
-\bibitem{markov1} C. Thornton. Markov Modeling for Generative Music. University of Sussex, Brighton UK. http://www.sussex.ac.uk/Users/christ/
-papers/reconstituted-music.pdf
-
-
 
 \end{thebibliography}
 
