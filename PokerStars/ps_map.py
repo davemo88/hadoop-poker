@@ -51,18 +51,32 @@ key = None
 ## here there be bugs
 for line in sys.stdin:
 
-    print line
-
     if "Hand #" in line:
+
+        if key != None:
+
+            print 'key (hand #)', key
+            print 'seat chips', seat_chips
+            print 'hole cards', hole_cards
+            print 'pot before action', pot
+            print 'action', action
+            print 'amount', amount
+            print 'total bet', total_bet
+            print 'winnings', winnings
+
         key = re.search('\d+',line).group()
-        postflop = False
 
         seat_chips = {}
         hole_cards = None
         action = None
         amount = None
-        total = None
+        total_bet = None
         pot = 0
+        winnings = 0
+
+## do i need this?
+        postflop = False
+        first_to_act = False
 
     if key and not postflop:
 
@@ -80,41 +94,47 @@ for line in sys.stdin:
 
 ## ignore hands where PLAYER is in the blinds
         elif 'posts' in line and 'blind' in line:
-
             if PLAYER in line:
                 key = None
             else:
                 pot += int(re.findall('\d+', line)[-1])
-                print pot
-
 
         elif 'Dealt to {}'.format(PLAYER) in line:
             hole_cards = line.split('[')[-1][:-2].split()
 
 ## ignore hand where somebody raises or calls before PLAYER gets to act
-        elif ('raises' in line or 'calls' in line) and PLAYER not in line:
+        elif ('raises' in line or 'calls' in line) \
+        and PLAYER not in line and not first_to_act:
             key = None
 
         elif PLAYER in line and re.search('raises|calls|folds',line):
+            first_to_act = True
             action = re.search('raises|calls|folds',line).group()
 
             if action == 'raises':
 
                 amount = re.findall('\d+', line)[-2]
 
-                total = re.findall('\d+', line)[-1]
+                total_bet = re.findall('\d+', line)[-1]
 
             elif action == 'calls':
 
                 amount = re.findall('\d+', line)[-1]
 
-            print action, amount, total
-
         elif 'collected' in line and PLAYER in line:
 
-            winnings = re.search('\d+', line).group()
-
-            print winnings
-
+            winnings = re.findall('\d+', line)[-1]
 ## emit the key with our feature vector
     # print key, [...]
+
+## for demo purposes
+if key != None:
+
+            print 'key', key
+            print 'seat chips', seat_chips
+            print 'hole cards', hole_cards
+            print 'pot before action', pot
+            print 'action', action
+            print 'amount', amount
+            print 'total bet', total_bet
+            print 'winnings', winnings
