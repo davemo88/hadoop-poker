@@ -1,2 +1,7 @@
 *.pyc
 hands/
+Tex/HadoopPoker.aux
+Tex/HadoopPoker.log
+Tex/HadoopPoker.out
+Tex/HadoopPoker.pdf
+Tex/HadoopPoker.synctex.gz

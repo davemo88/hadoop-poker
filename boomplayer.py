@@ -1,5 +1,7 @@
 """
+code to grab poker hands from boomplayer.com
 
+needs to be adapted for map reduce
 
 """
 
