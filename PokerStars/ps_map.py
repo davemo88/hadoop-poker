@@ -53,20 +53,9 @@ for line in sys.stdin:
 
     if "Hand #" in line:
 
-        if key != None:
-
-            print 'key (hand #)', key
-            print 'seat chips', seat_chips
-            print 'hole cards', hole_cards
-            print 'pot before action', pot
-            print 'action', action
-            print 'amount', amount
-            print 'total bet', total_bet
-            print 'winnings', winnings
-
         key = re.search('\d+',line).group()
 
-        seat_chips = {}
+        seat_chips = {i:0 for i in range(1,10)}
         hole_cards = None
         action = None
         amount = None
@@ -81,16 +70,16 @@ for line in sys.stdin:
     if key and not postflop:
 
         if "is the button" in line:
-            button = re.search('Seat #\d',line).group()[-1]
+            button = int(re.search('Seat #\d',line).group()[-1])
 
         elif 'Seat' in line and 'chips' in line:
             nums = re.findall('\d+',line)
-            seat_chips[nums[0]] = nums[-1]
+            seat_chips[int(nums[0])] = int(nums[-1])
 
             if PLAYER in line:
 ## need to add relative position like distance from button
                 player_stack = nums[-1]
-                player_pos = nums[0]
+                player_pos = int(nums[0])
 
 ## ignore hands where PLAYER is in the blinds
         elif 'posts' in line and 'blind' in line:
@@ -111,30 +100,51 @@ for line in sys.stdin:
             first_to_act = True
             action = re.search('raises|calls|folds',line).group()
 
-            if action == 'raises':
+            if action == 'folds':
 
-                amount = re.findall('\d+', line)[-2]
+                amount = 0
+                total_bet = 0
 
-                total_bet = re.findall('\d+', line)[-1]
+            elif action == 'raises':
+
+                amount = int(re.findall('\d+', line)[-2])
+                total_bet = int(re.findall('\d+', line)[-1])
 
             elif action == 'calls':
 
-                amount = re.findall('\d+', line)[-1]
+                amount = int(re.findall('\d+', line)[-1])
+                total_bet = amount
 
-        elif 'collected' in line and PLAYER in line:
+        elif 'collected' in line:
 
-            winnings = re.findall('\d+', line)[-1]
-## emit the key with our feature vector
-    # print key, [...]
+            if PLAYER in line:
 
-## for demo purposes
-if key != None:
+                winnings = int(re.findall('\d+', line)[-1])
 
-            print 'key', key
-            print 'seat chips', seat_chips
-            print 'hole cards', hole_cards
-            print 'pot before action', pot
-            print 'action', action
-            print 'amount', amount
-            print 'total bet', total_bet
-            print 'winnings', winnings
+## when we know the payoff we can emit the key with our feature vector
+## feature vector is chips in order around the table starting with player, 
+## distance to dealer button from player
+## 3 binary variables for possible actions (fold, call, raise)
+## amount raised / called
+## total bet
+## pot after action
+## winnings
+            chips = seat_chips.values()
+            val = chips[player_pos-1:]+chips[:player_pos-1]
+## how far from the button
+            val.append((button - player_pos) % 9)
+            if action == 'folds':
+                val += [1,0,0]
+            elif action == 'calls':
+                val += [0,1,0]
+            elif action == 'raises':
+                val += [0,0,1]
+            val.append(amount)
+            val.append(total_bet)
+            val.append(pot)
+            val.append(winnings)
+
+            print key, '\t', val
+
+## set key to none until we get to the next hand
+            key = None
