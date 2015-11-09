@@ -53,10 +53,12 @@ public class IRCMergeReducer extends MapReduceBase
 		String handNum = key.toString();
 		String numPlayers = "";
 		String sizeOfFlopPot = "";
+		String communityCards = "";
 		
 		class PdbData {
 			String nickname;
 			String position;
+			String startingBankroll;
 			String preflopAction;
 			String amountWon;
 			String pocketCards;
@@ -81,23 +83,24 @@ public class IRCMergeReducer extends MapReduceBase
 				String[] parsedVector = valueVector.split("\\s+");
 				numPlayers = parsedVector[0];
 				sizeOfFlopPot = parsedVector[1];
+				communityCards = parsedVector[2];
 			} else if (fileType.equals("pdb")) {
 				//for debugging: output.collect(new Text("pdb"), new Text(valueVector));
 				String[] parsedVector = valueVector.split("\\s+");
 				PdbData pdbData = new PdbData();
 				pdbData.nickname = parsedVector[0];
 				pdbData.position = parsedVector[1];
-				pdbData.preflopAction = parsedVector[2];
-				pdbData.amountWon = parsedVector[3];
-				pdbData.pocketCards = parsedVector[4];
+				pdbData.startingBankroll = parsedVector[2];
+				pdbData.preflopAction = parsedVector[3];
+				pdbData.amountWon = parsedVector[4];
+				pdbData.pocketCards = parsedVector[5];
 				pdbFiles.add(pdbData);
 			} else {
 				output.collect(new Text("??"), new Text("unrecognized filetype"));
 			}
 		}
 		
-		int numPlayers_int = Integer.parseInt(numPlayers);
-		//this isn't right because i filtered out players who don't show hands. for (int i = 0; i < numPlayers_int; i++) {
+		//create an output pair for each player of this hand
 		for (int i = 0; i < pdbFiles.size(); i++) {
 			PdbData pdbData = pdbFiles.get(i);
 			//build output value
@@ -108,7 +111,13 @@ public class IRCMergeReducer extends MapReduceBase
 			sb.append(" ");
 			sb.append(sizeOfFlopPot);
 			sb.append(" ");
+			sb.append(communityCards);
+			sb.append(" ");
 			sb.append(pdbData.position);
+			sb.append(" ");
+			sb.append(pdbData.startingBankroll);
+			sb.append(" ");
+			sb.append(pdbData.preflopAction);
 			sb.append(" ");
 			sb.append(pdbData.amountWon);
 			sb.append(" ");

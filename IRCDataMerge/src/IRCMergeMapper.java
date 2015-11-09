@@ -74,7 +74,7 @@ public class IRCMergeMapper extends MapReduceBase
 			}
 			/* intermediate value will be of the format:
 			 * key:   {handNum}
-			 * value: {hdbDELIM nickname position preflopaction amountwon card1,card2} 
+			 * value: {hdbDELIM nickname position startingBankroll preflopaction amountwon card1,card2} 
 			 */
 			newKey = parsedInput[1].trim();
 			StringBuilder sb = new StringBuilder(128);
@@ -85,6 +85,9 @@ public class IRCMergeMapper extends MapReduceBase
 			sb.append(" ");
 			//position
 			sb.append(parsedInput[3]);
+			sb.append(" ");
+			//starting bankroll
+			sb.append(parsedInput[8]);
 			sb.append(" ");
 			//preflop action
 			sb.append(parsedInput[4]);
