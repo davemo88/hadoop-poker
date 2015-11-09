@@ -39,7 +39,7 @@ public class IRCMergeMapper extends MapReduceBase
 				//board cards not revealed. discard data. 
 				return;
 			}
-			/* int vals will be of the format:
+			/* intermediate value will be of the format:
 			 * key:   {handNum}
 			 * value: {hdbDELIM numPlayers sizeOfPotAtFlop card1,card2,card3,card4,card5} 
 			 */
@@ -72,10 +72,17 @@ public class IRCMergeMapper extends MapReduceBase
 			if (lenParse < 13) {
 				return;
 			}
+			/* intermediate value will be of the format:
+			 * key:   {handNum}
+			 * value: {hdbDELIM nickname position preflopaction amountwon card1,card2} 
+			 */
 			newKey = parsedInput[1].trim();
 			StringBuilder sb = new StringBuilder(128);
 			//file type
 			sb.append("pdbDELIM ");
+			//nickname
+			sb.append(parsedInput[0]);
+			sb.append(" ");
 			//position
 			sb.append(parsedInput[3]);
 			sb.append(" ");
