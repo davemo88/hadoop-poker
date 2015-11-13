@@ -10,3 +10,5 @@ hadoop fs -rm -r IRCMergeOutput/output
 hadoop jar IRCMerge.jar IRCMergeInput/199504Input IRCMergeOutput/output
 #copy output to local
 hadoop fs -get IRCMergeOutput/output output
+#open relevant file
+gedit output/part-00000 &

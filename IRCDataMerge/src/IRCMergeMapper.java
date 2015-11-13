@@ -20,8 +20,7 @@ public class IRCMergeMapper extends MapReduceBase
 		//output the unmodified input for debugging purposes
 		String[] parsedInput = value.toString().split("\\s+");
 		int lenParse = parsedInput.length;
-		//for debugging
-		//output.collect(new Text("MapperInput: "), new Text("MapperInput: " + value.toString()));
+		//for debugging: output.collect(new Text("MapperInput: "), new Text("MapperInput: " + value.toString()));
 		
 		//determine the filetype. hdb starts with an int, pdb doesn't. 
 		String fileType;
@@ -35,10 +34,6 @@ public class IRCMergeMapper extends MapReduceBase
 		String newKey = " ";
 		String newValue = " ";
 		if (fileType.equals("hdb")) {
-			if (lenParse < 13) {
-				//board cards not revealed. discard data. 
-				return;
-			}
 			/* intermediate value will be of the format:
 			 * key:   {handNum}
 			 * value: {hdbDELIM numPlayers sizeOfPotAtFlop card1,card2,card3,card4,card5} 
@@ -57,21 +52,22 @@ public class IRCMergeMapper extends MapReduceBase
 			sb.append(" ");
 			newValue = sb.toString();
 			//community cards
-			sb.append(parsedInput[8].trim());
-			sb.append(",");
-			sb.append(parsedInput[9].trim());
-			sb.append(",");
-			sb.append(parsedInput[10].trim());
-			sb.append(",");
-			sb.append(parsedInput[11].trim());
-			sb.append(",");
-			sb.append(parsedInput[12].trim());
+			if (lenParse < 13) {
+				//community cards not revealed. use placeholders
+				sb.append("-,-,-,-,-");
+			} else {
+				sb.append(parsedInput[8].trim());
+				sb.append(",");
+				sb.append(parsedInput[9].trim());
+				sb.append(",");
+				sb.append(parsedInput[10].trim());
+				sb.append(",");
+				sb.append(parsedInput[11].trim());
+				sb.append(",");
+				sb.append(parsedInput[12].trim());
+			}
 			newValue = sb.toString();
 		} else if (fileType.equals("pdb")) {
-			//only proceed if pocket cards are revealed 
-			if (lenParse < 13) {
-				return;
-			}
 			/* intermediate value will be of the format:
 			 * key:   {handNum}
 			 * value: {hdbDELIM nickname position startingBankroll preflopaction amountwon card1,card2} 
@@ -96,9 +92,14 @@ public class IRCMergeMapper extends MapReduceBase
 			sb.append(parsedInput[10]);
 			sb.append(" ");
 			//pocket cards
-			sb.append(parsedInput[11]);
-			sb.append(",");
-			sb.append(parsedInput[12]);
+			if (lenParse < 13) {
+				//not shown. use placeholders.
+				sb.append("-,-");
+			} else {
+				sb.append(parsedInput[11]);
+				sb.append(",");
+				sb.append(parsedInput[12]);
+			}
 			newValue = sb.toString();
 		} else {
 			//an error occurred
