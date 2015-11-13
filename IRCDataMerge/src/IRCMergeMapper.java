@@ -46,11 +46,6 @@ public class IRCMergeMapper extends MapReduceBase
 			//num players
 			sb.append(parsedInput[3]);
 			sb.append(" ");
-			//size of pot at flop
-			String potSize = parsedInput[4].split("/")[1];
-			sb.append(potSize);
-			sb.append(" ");
-			newValue = sb.toString();
 			//community cards
 			if (lenParse < 13) {
 				//community cards not revealed. use placeholders
@@ -103,7 +98,8 @@ public class IRCMergeMapper extends MapReduceBase
 			newValue = sb.toString();
 		} else {
 			//an error occurred
-			output.collect(new Text("Mapper input: "), new Text("Mapper Input: unknown filetype"));
+			//output.collect(new Text("Mapper input: "), new Text("Mapper Input: unknown filetype"));
+			return;
 		}
 		output.collect(new Text(newKey), new Text(newValue));		
 	}

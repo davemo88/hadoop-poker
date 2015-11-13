@@ -42,7 +42,6 @@ public class IRCMergeReducer extends MapReduceBase
 		class HdbData {
 			String handNum;
 			String numPlayers;
-			String sizeOfFlopPot;
 			String communityCards;
 		}
 		
@@ -80,8 +79,7 @@ public class IRCMergeReducer extends MapReduceBase
 				String[] parsedVector = valueVector.split("\\s+");
 				hdbData.handNum = key.toString();
 				hdbData.numPlayers = parsedVector[0];
-				hdbData.sizeOfFlopPot = parsedVector[1];
-				hdbData.communityCards = parsedVector[2];
+				hdbData.communityCards = parsedVector[1];
 			} else if (fileType.equals("pdb")) {
 				//for debugging: output.collect(new Text("pdb"), new Text(valueVector));
 				String[] parsedVector = valueVector.split("\\s+");
@@ -135,8 +133,6 @@ public class IRCMergeReducer extends MapReduceBase
 					sb.append(" ");
 				}
 			}
-			sb.append(hdbData.sizeOfFlopPot);
-			sb.append(" ");
 			//preflop action - requires parsing into flags: blind, fold, check, call, raise, other
 			String action = pdbData.preflopAction;
 			if (action.equals("B")) {
@@ -159,17 +155,23 @@ public class IRCMergeReducer extends MapReduceBase
 				sb.append("0,0,0,0,1,0 ");
 			} else {
 				//other = b (bet), Q(quits game), K (kicked from game), or incorrect syntax
-				sb.append("0,0,0,0,1,");
+				sb.append("0,0,0,0,0,");
 				sb.append(action);
 				sb.append(" ");
 			}	
-			//sb.append(pdbData.preflopAction);
-			//sb.append(" ");
+			//amount won
 			sb.append(pdbData.amountWon);
 			sb.append(" ");
-			sb.append(pdbData.pocketCards);
-			String newValue = sb.toString();
+			//pocket cards
+			if (pdbData.pocketCards.equals("-,-")) {
+				//discard data if pocket cards aren't shown
+				return;
+			} else {
+				sb.append(pdbData.pocketCards);
+				String newValue = sb.toString();
+			}
 			String keyString = hdbData.handNum + "-" + pdbData.nickname;
+			String newValue = sb.toString();
 			output.collect(new Text(keyString), new Text(newValue));
 		}
 	}

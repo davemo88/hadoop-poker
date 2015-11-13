@@ -7,7 +7,8 @@ jar cvfe IRCMerge.jar IRCMerge -C bin .
 #delete previous output file
 hadoop fs -rm -r IRCMergeOutput/output
 #run map reduce
-hadoop jar IRCMerge.jar IRCMergeInput/199504Input IRCMergeOutput/output
+#hadoop jar IRCMerge.jar IRCMergeInput/199504Input IRCMergeOutput/output
+hadoop jar IRCMerge.jar IRCData/199505 IRCMergeOutput/output
 #copy output to local
 hadoop fs -get IRCMergeOutput/output output
 #open relevant file

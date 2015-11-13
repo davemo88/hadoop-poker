@@ -37,7 +37,7 @@ public class CardRank extends Configured implements Tool {
 	
 	public static void main(String args[]) throws Exception {
 		
-		System.out.println("Hello from IRCMerge main");
+		System.out.println("Hello from CardRank main");
 		
 		int exitCode = ToolRunner.run(new CardRank(), args);
 		System.exit(exitCode);
