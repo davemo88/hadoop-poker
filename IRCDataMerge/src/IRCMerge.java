@@ -17,7 +17,8 @@ public class IRCMerge extends Configured implements Tool {
 			return -1;
 		}
 		JobConf conf = new JobConf(IRCMerge.class);
-		
+		conf.setBoolean("mapreduce.input.fileinputformat.input.dir.recursive", true);
+
 		FileInputFormat.setInputPaths(conf, new Path(args[0]));
 		FileOutputFormat.setOutputPath(conf, new Path(args[1]));
 		

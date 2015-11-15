@@ -22,11 +22,18 @@ public class IRCMergeMapper extends MapReduceBase
 		int lenParse = parsedInput.length;
 		//for debugging: output.collect(new Text("MapperInput: "), new Text("MapperInput: " + value.toString()));
 		
-		//determine the filetype. hdb starts with an int, pdb doesn't. 
+		//determine the filetype.
+		//hdb starts with an int. pdb doesn't
+		//rdb has an int at its 0th and 2nd index. 
 		String fileType;
 		try {
 			Integer.parseInt(parsedInput[0].trim());
-			fileType = "hdb";
+			try {
+				Integer.parseInt(parsedInput[2].trim());
+				fileType = "hdb";
+			} catch (NumberFormatException nfe) {
+				fileType = "rdb";
+			}
 		} catch (NumberFormatException nfe) {
 			fileType = "pdb";
 		}
@@ -96,8 +103,11 @@ public class IRCMergeMapper extends MapReduceBase
 				sb.append(parsedInput[12]);
 			}
 			newValue = sb.toString();
+		} else if (fileType == "rdb"){
+			//rdb is discarded
+			return;
 		} else {
-			//an error occurred
+			//error?
 			//output.collect(new Text("Mapper input: "), new Text("Mapper Input: unknown filetype"));
 			return;
 		}

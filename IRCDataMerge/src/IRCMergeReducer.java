@@ -98,7 +98,7 @@ public class IRCMergeReducer extends MapReduceBase
 					largestBankroll = Integer.parseInt(pdbData.startingBankroll);
 				}
 			} else {
-				output.collect(new Text("??"), new Text("unrecognized filetype"));
+				output.collect(new Text("NEITHER HDBorPDB"), new Text(valueVector));
 			}
 		}
 		
