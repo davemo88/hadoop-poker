@@ -111,51 +111,50 @@ public class IRCMergeReducer extends MapReduceBase
 			}
 			//build output value
 			StringBuilder sb = new StringBuilder(128);
-			sb.append(hdbData.numPlayers);
+			//num players is divided by 9
+			String normNumPlayers = normalizeString(hdbData.numPlayers, 9);
+			sb.append(normNumPlayers);
 			sb.append(" ");
-			sb.append(pdbData.position);
+			//position is divided by 8
+			String normPosition = normalizeString(pdbData.position, 8);
+			sb.append(normPosition);
 			sb.append(" ");
 			//all 9 bankrolls in order starting at position
 			int startingPos = Integer.parseInt(pdbData.position);
 			for (int j = 0; j < const_players; j++) {
 				int bankrollPos = (startingPos + j) % const_players;
 				if (pdbMap.containsKey(bankrollPos)) {
-					String bankroll = pdbMap.get(bankrollPos).startingBankroll;
-					float normalizedBankroll = Integer.parseInt(bankroll) / (float)largestBankroll;
-					sb.append(Float.toString(normalizedBankroll));
-					//not normalized: sb.append(bankroll);
+					//normalize by largest bankroll
+					String normalizedBankroll = normalizeString(pdbMap.get(bankrollPos).startingBankroll, largestBankroll);
+					sb.append(normalizedBankroll);
 				} else {
 					sb.append("-");
 				}
-				if (j != const_players-1) {
-					sb.append(",");
-				} else {
-					sb.append(" ");
-				}
+				sb.append(" ");
 			}
 			//preflop action - requires parsing into flags: blind, fold, check, call, raise, other
 			String action = pdbData.preflopAction;
 			if (action.equals("B")) {
 				//blind bet
-				sb.append("1,0,0,0,0,0 ");
+				sb.append("1 0 0 0 0,0 ");
 			} else if (action.equals("f")) {
 				//fold
-				sb.append("0,1,0,0,0,0 ");
+				sb.append("0 1 0 0 0,0 ");
 			} else if (action.equals("k")) {
 				//check
-				sb.append("0,0,1,0,0,0 ");
+				sb.append("0 0 1 0 0 0 ");
 			} else if (action.equals("c")) {
 				//call
-				sb.append("0,0,0,1,0,0 ");
+				sb.append("0 0 0 1 0 0 ");
 			} else if (action.equals("r")) {
 				//raise
-				sb.append("0,0,0,0,1,0 ");
+				sb.append("0 0 0 0 1 0 ");
 			} else if (action.equals("A")) {
 				//all in - I'm treating this as a raise
-				sb.append("0,0,0,0,1,0 ");
+				sb.append("0 0 0 0 1 0 ");
 			} else {
 				//other = b (bet), Q(quits game), K (kicked from game), or incorrect syntax
-				sb.append("0,0,0,0,0,");
+				sb.append("0 0 0 0 0 ");
 				sb.append(action);
 				sb.append(" ");
 			}	
@@ -174,5 +173,11 @@ public class IRCMergeReducer extends MapReduceBase
 			String newValue = sb.toString();
 			output.collect(new Text(keyString), new Text(newValue));
 		}
+	}
+	
+	public String normalizeString(String denorm, float maxVal) {		
+		int denorm_int = Integer.parseInt(denorm);
+		float normalized = denorm_int / maxVal;
+		return String.format("%.3f", normalized);
 	}
 }
