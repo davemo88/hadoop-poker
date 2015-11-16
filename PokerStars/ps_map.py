@@ -55,7 +55,10 @@ for line in sys.stdin:
 
         key = re.search('\d+',line).group()
 
-        seat_chips = {i:0 for i in range(1,10)}
+        seat_chips = {}
+        for i in range(1,10):
+            seat_chips[i] = 0
+
         hole_cards = None
         action = None
         amount = None
@@ -88,7 +91,7 @@ for line in sys.stdin:
             else:
                 pot += int(re.findall('\d+', line)[-1])
 
-        elif 'Dealt to {}'.format(PLAYER) in line:
+        elif 'Dealt to %s' % (PLAYER) in line:
             hole_cards = line.split('[')[-1][:-2].split()
 
 ## ignore hand where somebody raises or calls before PLAYER gets to act
@@ -122,29 +125,28 @@ for line in sys.stdin:
                 winnings = int(re.findall('\d+', line)[-1])
 
 ## when we know the payoff we can emit the key with our feature vector
-## feature vector is chips in order around the table starting with player, 
-## distance to dealer button from player
-## 3 binary variables for possible actions (fold, call, raise)
-## amount raised / called
-## total bet
-## pot after action
-## winnings
+## values are:
+## num players
+## position from button
+## chips in order around the table starting with player, 
+## hold cards like Ay,Bx
             chips = seat_chips.values()
-            val = chips[player_pos-1:]+chips[:player_pos-1]
-## how far from the button
-            val.append((button - player_pos) % 9)
-            if action == 'folds':
-                val += [1,0,0]
-            elif action == 'calls':
-                val += [0,1,0]
-            elif action == 'raises':
-                val += [0,0,1]
-            val.append(amount)
-            val.append(total_bet)
-            val.append(pot)
-            val.append(winnings)
+## normalize to biggest stack size
+            z = max(chips)
 
-            print key, '\t', val
+            val = chips[player_pos-1:]+chips[:player_pos-1]
+
+            val = [float(v)/z for v in val]
+
+            val.append(len(filter(lambda _ : _ != 0, chips)) / 9.0)
+
+## how far from the button
+            val.append(float((button - player_pos) % 9) / 8.0)
+            val.append(','.join(map(str,hole_cards)))
+
+            val = ' '.join(map(str, val))
+
+            print '%s\t%s' % (action, val)
 
 ## set key to none until we get to the next hand
             key = None
