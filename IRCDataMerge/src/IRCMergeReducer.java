@@ -15,6 +15,23 @@ import org.apache.hadoop.mapred.Reporter;
 public class IRCMergeReducer extends MapReduceBase 
 	implements Reducer<Text, Text, Text, Text> {
 
+	//general hand info
+	class HdbData {
+		String handNum;
+		String numPlayers;
+		String communityCards;
+	}
+	
+	//player info
+	class PdbData {
+		String nickname;
+		String position;
+		String startingBankroll;
+		String preflopAction;
+		String amountWon;
+		String pocketCards;
+	}
+	
 	@Override
 	public void reduce(Text key, Iterator<Text> values,
 			OutputCollector<Text, Text> output, Reporter r)
@@ -37,23 +54,6 @@ public class IRCMergeReducer extends MapReduceBase
 		 * Value = num players, 9bankrolls in order starting with player, position, 
 		 * 3preflop flags, amount won, pocket cards
 		 */
-		
-		//general hand info
-		class HdbData {
-			String handNum;
-			String numPlayers;
-			String communityCards;
-		}
-		
-		//player info
-		class PdbData {
-			String nickname;
-			String position;
-			String startingBankroll;
-			String preflopAction;
-			String amountWon;
-			String pocketCards;
-		}
 		
 		//global variables
 		final int const_players = 9;
@@ -158,8 +158,10 @@ public class IRCMergeReducer extends MapReduceBase
 				sb.append(action);
 				sb.append(" ");
 			}	
-			//amount won
-			sb.append(pdbData.amountWon);
+			//amount won, normalized by max bankroll
+			String amountWon_string = pdbData.amountWon;
+			String amountWon_normalized = normalizeString(amountWon_string, largestBankroll);
+			sb.append(amountWon_normalized);
 			sb.append(" ");
 			//pocket cards
 			if (pdbData.pocketCards.equals("-,-")) {
@@ -179,5 +181,24 @@ public class IRCMergeReducer extends MapReduceBase
 		int denorm_int = Integer.parseInt(denorm);
 		float normalized = denorm_int / maxVal;
 		return String.format("%.3f", normalized);
+	}
+	
+	public String preflopActionToFlags(String preflopAction) {
+		char firstAction = preflopAction.charAt(0);
+		String returnString = "";
+		
+		
+		//DISCUSS WITH DAVID. 
+		if (firstAction == 'r') {
+			//
+		} else if (firstAction == 'a') {
+			//
+		} else if (firstAction == 'b') {
+			//
+		} else if (firstAction == 'c') {
+			//
+		} 
+		
+		return returnString;
 	}
 }
