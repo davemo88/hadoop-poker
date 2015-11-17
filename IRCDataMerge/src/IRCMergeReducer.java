@@ -27,7 +27,7 @@ public class IRCMergeReducer extends MapReduceBase
 		String nickname;
 		String position;
 		String startingBankroll;
-		String preflopAction;
+		String preflopActions;
 		String amountWon;
 		String pocketCards;
 	}
@@ -41,25 +41,18 @@ public class IRCMergeReducer extends MapReduceBase
 		-       no action; player is no longer contesting pot
         B       blind bet
         f       fold
-        k       check
-        b       bet
-        c       call
-        r       raise
-        A       all-in
+        = k       check
+        = b       bet
+        = c       call
+        = r       raise
+        = A       all-in
         Q       quits game
         K       kicked from game*/
-		
-		/* Output will be of the format:
-		 * Key = handnum
-		 * Value = num players, 9bankrolls in order starting with player, position, 
-		 * 3preflop flags, amount won, pocket cards
-		 */
 		
 		//global variables
 		final int const_players = 9;
 		int largestBankroll = 1;
 		Map<Integer, PdbData> pdbMap = new HashMap<Integer, PdbData>();
-		ArrayList<PdbData> pdbFiles = new ArrayList<PdbData>();
 		HdbData hdbData = new HdbData();
 		
 		//for each value associated with this intermediate key (hand num)
@@ -88,10 +81,9 @@ public class IRCMergeReducer extends MapReduceBase
 				int intPosition = Integer.parseInt(parsedVector[1]) - 1; //position range is 0-8 not 1-9
 				pdbData.position = Integer.toString(intPosition);  
 				pdbData.startingBankroll = parsedVector[2];
-				pdbData.preflopAction = parsedVector[3];
+				pdbData.preflopActions = parsedVector[3];
 				pdbData.amountWon = parsedVector[4];
 				pdbData.pocketCards = parsedVector[5];
-				pdbFiles.add(pdbData);
 				pdbMap.put(intPosition, pdbData);
 				//keep track of largest bankroll for normalization
 				if (Integer.parseInt(pdbData.startingBankroll) > largestBankroll) {
@@ -103,8 +95,10 @@ public class IRCMergeReducer extends MapReduceBase
 		}
 		
 		//create an output pair for each player that has won
-		for (int i = 0; i < pdbFiles.size(); i++) {
-			PdbData pdbData = pdbFiles.get(i);
+		for (int i = 0; i < pdbMap.size(); i++) {
+			PdbData pdbData = pdbMap.get(i);
+			int numPlayers = Integer.parseInt(hdbData.numPlayers);
+			
 			//discard data if this player didn't win
 			if (Integer.parseInt(pdbData.amountWon) <= 0) {
 				return;
@@ -113,11 +107,13 @@ public class IRCMergeReducer extends MapReduceBase
 			StringBuilder sb = new StringBuilder(128);
 			//num players is divided by 9
 			String normNumPlayers = normalizeString(hdbData.numPlayers, 9);
-			sb.append(normNumPlayers);
+			sb.append(hdbData.numPlayers);
+			//sb.append(normNumPlayers);
 			sb.append(" ");
 			//position is divided by 8
 			String normPosition = normalizeString(pdbData.position, 8);
-			sb.append(normPosition);
+			//sb.append(normPosition);
+			sb.append(pdbData.position);
 			sb.append(" ");
 			//all 9 bankrolls in order starting at position
 			int startingPos = Integer.parseInt(pdbData.position);
@@ -132,36 +128,43 @@ public class IRCMergeReducer extends MapReduceBase
 				}
 				sb.append(" ");
 			}
-			//preflop action - requires parsing into flags: blind, fold, check, call, raise, other
-			String action = pdbData.preflopAction;
-			if (action.equals("B")) {
-				//blind bet
-				sb.append("1 0 0 0 0,0 ");
-			} else if (action.equals("f")) {
-				//fold
-				sb.append("0 1 0 0 0,0 ");
-			} else if (action.equals("k")) {
-				//check
-				sb.append("0 0 1 0 0 0 ");
-			} else if (action.equals("c")) {
-				//call
-				sb.append("0 0 0 1 0 0 ");
-			} else if (action.equals("r")) {
-				//raise
-				sb.append("0 0 0 0 1 0 ");
-			} else if (action.equals("A")) {
-				//all in - I'm treating this as a raise
-				sb.append("0 0 0 0 1 0 ");
+			//preflop action - discard if this player was not first to act
+			String preflopActions = pdbData.preflopActions;
+			int numRotations = preflopActions.length();
+			char action = ' ';
+			outerloop:
+			for (int rot = 0; rot < numRotations; rot++) {
+				for (int p = 0; p < numPlayers; p++) { //this should change? to position?
+					try {
+						action = pdbMap.get(p).preflopActions.charAt(rot);
+					} catch (StringIndexOutOfBoundsException e) {
+						action = ' ';
+					}
+					if ((action == 'k') ||  //check
+						(action == 'b') ||  //bet
+						(action == 'c') ||  //call
+						(action == 'r') ||  //raise
+						(action == 'A')) {  //All in
+						if (p == i) { //proceed if current player was first to act
+							break outerloop;
+						} else {
+							return; //discard data if another player was first to act
+						}
+					}
+				}
+			}		
+			//convert first action to the key
+			String newKey = "";
+			if (action == 'f') {
+				newKey = "Folds";
+			} else if (action == 'c') {
+				newKey = "Calls";
+			} else if ((action == 'r') || (action == 'b')) {
+				newKey = "Raises";
 			} else {
-				//other = b (bet), Q(quits game), K (kicked from game), or incorrect syntax
-				sb.append("0 0 0 0 0 ");
-				sb.append(action);
-				sb.append(" ");
-			}	
-			//amount won, normalized by max bankroll
-			String amountWon_string = pdbData.amountWon;
-			String amountWon_normalized = normalizeString(amountWon_string, largestBankroll);
-			sb.append(amountWon_normalized);
+				newKey = "Error?";
+			}
+			sb.append(newKey);
 			sb.append(" ");
 			//pocket cards
 			if (pdbData.pocketCards.equals("-,-")) {
@@ -173,6 +176,7 @@ public class IRCMergeReducer extends MapReduceBase
 			}
 			String keyString = hdbData.handNum + "-" + pdbData.nickname;
 			String newValue = sb.toString();
+			//output.collect(new Text(newKey), new Text(newValue));
 			output.collect(new Text(keyString), new Text(newValue));
 		}
 	}
@@ -181,24 +185,5 @@ public class IRCMergeReducer extends MapReduceBase
 		int denorm_int = Integer.parseInt(denorm);
 		float normalized = denorm_int / maxVal;
 		return String.format("%.3f", normalized);
-	}
-	
-	public String preflopActionToFlags(String preflopAction) {
-		char firstAction = preflopAction.charAt(0);
-		String returnString = "";
-		
-		
-		//DISCUSS WITH DAVID. 
-		if (firstAction == 'r') {
-			//
-		} else if (firstAction == 'a') {
-			//
-		} else if (firstAction == 'b') {
-			//
-		} else if (firstAction == 'c') {
-			//
-		} 
-		
-		return returnString;
 	}
 }
