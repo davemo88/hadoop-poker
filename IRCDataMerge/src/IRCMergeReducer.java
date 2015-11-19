@@ -107,13 +107,13 @@ public class IRCMergeReducer extends MapReduceBase
 			StringBuilder sb = new StringBuilder(128);
 			//num players is divided by 9
 			String normNumPlayers = normalizeString(hdbData.numPlayers, 9);
-			sb.append(hdbData.numPlayers);
-			//sb.append(normNumPlayers);
+			//sb.append(hdbData.numPlayers);
+			sb.append(normNumPlayers);
 			sb.append(" ");
 			//position is divided by 8
 			String normPosition = normalizeString(pdbData.position, 8);
-			//sb.append(normPosition);
-			sb.append(pdbData.position);
+			sb.append(normPosition);
+			//sb.append(pdbData.position);
 			sb.append(" ");
 			//all 9 bankrolls in order starting at position
 			int startingPos = Integer.parseInt(pdbData.position);
@@ -124,7 +124,7 @@ public class IRCMergeReducer extends MapReduceBase
 					String normalizedBankroll = normalizeString(pdbMap.get(bankrollPos).startingBankroll, largestBankroll);
 					sb.append(normalizedBankroll);
 				} else {
-					sb.append("-");
+					sb.append("0");
 				}
 				sb.append(" ");
 			}
@@ -156,16 +156,16 @@ public class IRCMergeReducer extends MapReduceBase
 			//convert first action to the key
 			String newKey = "";
 			if (action == 'f') {
-				newKey = "Folds";
+				newKey = "folds";
 			} else if (action == 'c') {
-				newKey = "Calls";
+				newKey = "calls";
 			} else if ((action == 'r') || (action == 'b')) {
-				newKey = "Raises";
+				newKey = "raises";
 			} else {
-				newKey = "Error?";
+				newKey = "error?";
 			}
-			sb.append(newKey);
-			sb.append(" ");
+			//sb.append(newKey);
+			//sb.append(" ");
 			//pocket cards
 			if (pdbData.pocketCards.equals("-,-")) {
 				//discard data if pocket cards aren't shown
@@ -176,8 +176,8 @@ public class IRCMergeReducer extends MapReduceBase
 			}
 			String keyString = hdbData.handNum + "-" + pdbData.nickname;
 			String newValue = sb.toString();
-			//output.collect(new Text(newKey), new Text(newValue));
-			output.collect(new Text(keyString), new Text(newValue));
+			output.collect(new Text(newKey), new Text(newValue));
+			//output.collect(new Text(keyString), new Text(newValue));
 		}
 	}
 	
