@@ -45,12 +45,15 @@ baseURL = 'http://poker.cs.ualberta.ca/IRCdata/'
 response = requests.get(baseURL)
 index = response.content
 
+if os.path.exists("scrapedData"):
+	shutil.rmtree("scrapedData")
+os.mkdir("scrapedData")
+
 #extract list of tarfiles to download
-tarList = []
 m = re.findall('href=\"((\w+).\d+.tgz)\"', index)
 for match in m:
 	gameType = match[1]
-	if gameType == 'nolimit':
+	if gameType == 'nolimit' or gameType == 'tourney':
 		tarName = match[0]	
 		downloadAndMoveFile(baseURL, tarName)		
 		os.remove(tarName)
