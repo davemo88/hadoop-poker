@@ -88,7 +88,7 @@
 \begin{abstract}
 
 \noindent {
-Abstract to come...
+This project analyzes two sources of poker data to draw conclusions about strategy in No Limit Texas Hold'em. While significant research has been devoted to post-flop strategy, we chose to focus on pre-flop actions. Specifically, we examined the situation when a player has to opportunity to be first to call or raise. We used Hive and Spark to analyze ~3GB of hand histories and build an SVM. 
 } 
 
 \end{abstract}
@@ -100,7 +100,10 @@ Abstract to come...
 \begin{multicols}{2} % Two-column layout throughout the main article text
 
 \section{Introduction} 
-The goal of this analytic is to extract and present information from online poker hand logs. Our analysis would be restricted to No Limit Texas Hold'em, the most popular form of online poker. A single poker site like PokerStars will easily play billions of hands per year and a professional player may play hundreds of thousands if not millions of hands a year. This data can be used for at least the following purposes:
+The goal of this analytic is to extract and present information from online poker hand logs. Our analysis would be restricted to No Limit Texas Hold'em, the most popular form of online poker. While much research has been devoted to post-flop strategy we chose to focus on pre-flop strategy. Specifially, we focused on what a player's action should be when they are in a position to be 
+first to act. In other words, if all previous players have either folded or checked, what move should a player perform based on his or her cards, bankroll, and the bankrolls of the other players? The position of first to act is an especially interesting one because the player has more leverage for bluffing or setting the tone of a game. 
+
+A single poker site like PokerStars will easily play billions of hands per year and a professional player may play hundreds of thousands if not millions of hands a year. This data can be used for at least the following purposes:
 If one gathers sufficient data about a specific player, patterns in that player's play may become identifiable and thus exploitable when playing against that player.
 Identifying Profitable Strategies. By examining many hands, one can identify which strategies tend to be profitable. Some machine learning algorithm could be used here, e.g. probabilistic classification to come up with a strategy like ``in this case, fold 20 percent of the time and bet 80 percent of the time. Here we'd definitely like the machine learning algorithm to have access to the player statistics gathered in the first example. ``
 By combining statistics about particular players, i.e. the results of the first analysis, with guidelines for profitable play, i.e. the results of the second analysis, one may be to able to evaluate a particular player and identify the strong and weak parts of that player's game.
@@ -112,6 +115,7 @@ By combining statistics about particular players, i.e. the results of the first 
 \section{Motivation}
 
 Imperfect information.
+Leveraging the opportunity to be first to act. 
 
 %------------------------------------------------
 
@@ -122,6 +126,8 @@ One such paper \cite{SVMPoker} describes using a support vector machine to train
 
 Others, such as \cite{holdemml}, have used machine learning to build poker bots. SVMs and other classification algorithms are used to select an action to take based on a given situation.
 
+None of the research we encountered focused on pre-flop strategy. 
+
 %------------------------------------------------
 
 \section{Design}
@@ -130,11 +136,19 @@ Others, such as \cite{holdemml}, have used machine learning to build poker bots.
 \subsection{Sources}
 We used two sources of poker data. Both came in different formats that we have normalized using Map Reduce. 
 \begin{compactitem}
-\item{Poker Hand History} Our first source is the private hand history of a professional poker player who kindly agreed to donate his data to us. 
-\item{IRC Poker Database} Seven years of poker data has been scraped from a dozen IRC poker channels. 
+\item{Poker Hand History} - Our first source is the private hand history of a professional poker player who kindly agreed to donate his data to us. Jaime Staples is a 23 year old poker professional with over \$100K of online winnings. 
+\item{IRC Poker Database} - Seven years of poker data scraped from a dozen IRC poker channels. It was compiled and made available by the University of Alberta poker group.  
 \end{compactitem}
 
-\includegraphics[scale=.5]{Flowchart.png}
+\subsection{Feature Vectors}
+Our feature vectors consists of the action taken (fold or call/raise), number of players, player's position, all players' bankrolls, and the strength of the players cards. One of our biggest challenges was finding a feature vector that was possible based on both of our datasets. For example, the Jamie Staples data showed the players hands at all times whereas the IRC data did not. Similarly, the Jamie Staples data showed the potsize at the flop whereas the IRC data did not.  
+
+We normalized all the bankrolls according to the largest bankroll at the table. 
+
+\subsection{Design}
+Using map reduce, we standardized both of our data sets to a common format and merged them. Next, we ran the joint dataset into another map reduce that translated the player's cards (ex: 1cKs) into a hand strength value based on a table of poker hand probabilities. We used the resulting data set to train an SVM using Spark and to analyze the data using Hive. 
+
+\includegraphics[width=1\columnwidth]{Flowchart.png}
 Figure1.png
 
 
@@ -155,6 +169,7 @@ Figure1.png
 \section{Acknowledgements}
 
 Many thanks to Jaime Staples for sending us his hand histories free of charge. 
+
 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
