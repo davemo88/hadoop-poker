@@ -138,10 +138,10 @@ for line in sys.stdin:
 
             val = [float(v)/z for v in val]
 
-            val.append(len(filter(lambda _ : _ != 0, chips)) / 9.0)
+            val.insert(0, float((button - player_pos) % 9) / 8.0)
+            val.insert(0, len(filter(lambda _ : _ != 0, chips)) / 9.0)
 
 ## how far from the button
-            val.append(float((button - player_pos) % 9) / 8.0)
             val.append(','.join(map(str,hole_cards)))
 
             val = ' '.join(map(str, val))
