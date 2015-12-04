@@ -58,7 +58,7 @@ public class IRCMergeReducer extends MapReduceBase
 		//for each value associated with this intermediate key (hand num)
 		while (values.hasNext()) {			
 			String valueString = values.next().toString();
-			//For debugging: output.collect(new Text("reducer input: "), new Text(valueString));
+			//For debugging: output.collect(key, new Text(valueString));
 			String[] valueParts = valueString.split("DELIM");
 			if (valueParts.length != 2) {
 				output.collect(new Text("No Delim in reducer input??"), new Text(valueString));
@@ -95,14 +95,20 @@ public class IRCMergeReducer extends MapReduceBase
 		}
 		
 		//create an output pair for each player that has won
+		parentloop:
 		for (int i = 0; i < pdbMap.size(); i++) {
 			PdbData pdbData = pdbMap.get(i);
 			int numPlayers = Integer.parseInt(hdbData.numPlayers);
 			
 			//discard data if this player didn't win
 			if (Integer.parseInt(pdbData.amountWon) <= 0) {
-				return;
+				continue;
 			}
+			//discard data if pocket cards aren't shown
+			if (pdbData.pocketCards.equals("-,-")) {
+				continue;
+			}
+			
 			//build output value
 			StringBuilder sb = new StringBuilder(128);
 			//num players is divided by 9
@@ -132,27 +138,34 @@ public class IRCMergeReducer extends MapReduceBase
 			String preflopActions = pdbData.preflopActions;
 			int numRotations = preflopActions.length();
 			char action = ' ';
-			outerloop:
-			for (int rot = 0; rot < numRotations; rot++) {
-				for (int p = 0; p < numPlayers; p++) { //this should change? to position?
-					try {
-						action = pdbMap.get(p).preflopActions.charAt(rot);
-					} catch (StringIndexOutOfBoundsException e) {
-						action = ' ';
+			for (int pos = 0; pos < numPlayers; pos++) { 
+				try {
+					action = pdbMap.get(pos).preflopActions.charAt(0);
+				} catch (StringIndexOutOfBoundsException e) {
+					action = ' ';
+				}
+				if ((action == 'b') ||  //bet
+					(action == 'c') ||  //call
+					(action == 'r') ||  //raise
+					(action == 'A')) {  //All in
+					if (pos == i) { //proceed if current player was first to act
+						break;
+					} else {
+						continue parentloop; //discard data if another player was first to act
 					}
-					if ((action == 'k') ||  //check
-						(action == 'b') ||  //bet
-						(action == 'c') ||  //call
-						(action == 'r') ||  //raise
-						(action == 'A')) {  //All in
-						if (p == i) { //proceed if current player was first to act
-							break outerloop;
-						} else {
-							return; //discard data if another player was first to act
-						}
+				} else {
+					//if the current player performed a non-action action (ex Blind), discard data
+					if (pos == i) {
+						continue parentloop;
 					}
 				}
-			}		
+			}
+			//TEMP
+			sb.append(pdbData.preflopActions);
+			sb.append(" ");
+			sb.append(action);
+			sb.append(" ");
+			
 			//convert first action to the key
 			String newKey = "";
 			if (action == 'f') {
@@ -165,18 +178,12 @@ public class IRCMergeReducer extends MapReduceBase
 				newKey = "error?";
 			}
 			//sb.append(newKey);
-			//sb.append(" ");
+			//sb.append(" ");*/
 			//pocket cards
-			if (pdbData.pocketCards.equals("-,-")) {
-				//discard data if pocket cards aren't shown
-				return;
-			} else {
-				sb.append(pdbData.pocketCards);
-				String newValue = sb.toString();
-			}
-			String keyString = hdbData.handNum + "-" + pdbData.nickname;
+			sb.append(pdbData.pocketCards);
 			String newValue = sb.toString();
-			output.collect(new Text(newKey), new Text(newValue));
+			String keyString = hdbData.handNum + "-" + pdbData.nickname;
+			output.collect(new Text(keyString), new Text(newValue));
 			//output.collect(new Text(keyString), new Text(newValue));
 		}
 	}
