@@ -1,0 +1,22 @@
+HADOOP POKER: amh564-dk2353
+
+Our project used two sources of poker data to draw conclusions about poker strategy.
+Our code submission includes 3 mapreduce programs.
+
+1. IRC Feature Extraction 
+This cleans and organizes our first data source: an IRC-Poker database compiled by the University of Alberta.
+The map reduce project has several steps
+     --merge all the database's file into a set of chornological poker actions
+     --remove invalid data (ex: instances when a player loses or a player's hands aren't revealed)
+     --normalizes relevant values
+     --outputs a set of feature vectors for use in our SVM.
+     --the feature vector is of the form: <action, numPlayers, position, bank0, bank1, bank2, bank3, bank4, bank5, bank6, bank7, bank8, cards>
+
+2. PokerStars Feature Extraction
+
+3. Hand Strength Calculator
+Both the IRC and PokerStats Feature Extraction programs use actual card names (ex: 2cKd = 2 of clubs and King of diamonds) in the feature vector. We ran the output of both the IRC and PokerStars map reduce program through this program to convert the string representation of the cards into a normalized value that can be used in our SVM. 
+
+
+
+
