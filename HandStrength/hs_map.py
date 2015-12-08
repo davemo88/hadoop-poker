@@ -2,6 +2,13 @@
 
 import sys
 
+"""
+After the features have been extracted from both the PokerStars and IRC
+hand histories, we need to convert the string representation of the player's
+hand into a numeric representation. To do this we use a table which gives the
+chance that a hand wins against a random hand. The table is below.
+"""
+
 odds = \
 {'22': '0.503',
  '32o': '0.312',
@@ -174,6 +181,11 @@ odds = \
  'TT': '0.751'}
 
 def process_hole_cards(hole_cards):
+    """
+    This function looks up a hand in the hand strenght table.
+    A little formatting is required since the hands aren't 
+    represented consistently. 
+    """
 
     c1_rank = hole_cards[0][0]
     c1_suit = hole_cards[0][1]
