@@ -12,6 +12,26 @@ import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
 
 
+/*
+ * amh564-dk2353:
+ * IRCMerge is a map reduce program to clean and organize the data from the IRC Poker database.
+ * The IRC database has several different file types: hand database (hdb), player database (pdb),
+ * and roster database (rdb). These need to be merged to assess a chronological sequence of poker
+ * actions. Then we extract feature vectors of the form:
+ * <action, numPlayers, position, bank0, bank1, bank2, bank3, bank4, bank5, banke6, bank7, bank8, cards>
+ * To meet our vector's requirements, we discard any data where the player's cards aren't shown, the player
+ * isn't first to act, or the player in question doesn't win. 
+ * 
+ * The reducer receives all the extracted hdb and pdb data associated with a given handnum. Creating a feature
+ * vector happens in two stages:
+ * First it iterates through each value associated with a handum and constructs a list of hdbData and
+ * pdbData structs.
+ * Once all the structs for a given handnum have been aggregated, it iterates through them to creates a 
+ * feature vector of the form:
+ * <action, numPlayers, position, bank0, bank1, bank2, bank3, bank4, bank5, banke6, bank7, bank8, cards>
+ * Each vector value is normalized. 
+ */
+
 public class IRCMergeReducer extends MapReduceBase 
 	implements Reducer<Text, Text, Text, Text> {
 
@@ -36,18 +56,6 @@ public class IRCMergeReducer extends MapReduceBase
 	public void reduce(Text key, Iterator<Text> values,
 			OutputCollector<Text, Text> output, Reporter r)
 			throws IOException {
-		
-		/* IRC action notation:
-		-       no action; player is no longer contesting pot
-        B       blind bet
-        f       fold
-        = k       check
-        = b       bet
-        = c       call
-        = r       raise
-        = A       all-in
-        Q       quits game
-        K       kicked from game*/
 		
 		//global variables
 		final int const_players = 9;
@@ -90,7 +98,7 @@ public class IRCMergeReducer extends MapReduceBase
 					largestBankroll = Integer.parseInt(pdbData.startingBankroll);
 				}
 			} else {
-				output.collect(new Text("NEITHER HDBorPDB"), new Text(valueVector));
+				//output.collect(new Text("NEITHER HDBorPDB"), new Text(valueVector));
 			}
 		}
 		
@@ -108,18 +116,16 @@ public class IRCMergeReducer extends MapReduceBase
 			if (pdbData.pocketCards.equals("-,-")) {
 				continue;
 			}
-			
+	
 			//build output value
 			StringBuilder sb = new StringBuilder(128);
 			//num players is divided by 9
 			String normNumPlayers = normalizeString(hdbData.numPlayers, 9);
-			//sb.append(hdbData.numPlayers);
 			sb.append(normNumPlayers);
 			sb.append(" ");
 			//position is divided by 8
 			String normPosition = normalizeString(pdbData.position, 8);
 			sb.append(normPosition);
-			//sb.append(pdbData.position);
 			sb.append(" ");
 			//all 9 bankrolls in order starting at position
 			int startingPos = Integer.parseInt(pdbData.position);
@@ -160,12 +166,6 @@ public class IRCMergeReducer extends MapReduceBase
 					}
 				}
 			}
-			//TEMP
-			sb.append(pdbData.preflopActions);
-			sb.append(" ");
-			sb.append(action);
-			sb.append(" ");
-			
 			//convert first action to the key
 			String newKey = "";
 			if (action == 'f') {
@@ -177,14 +177,12 @@ public class IRCMergeReducer extends MapReduceBase
 			} else {
 				newKey = "error?";
 			}
-			//sb.append(newKey);
-			//sb.append(" ");*/
 			//pocket cards
 			sb.append(pdbData.pocketCards);
 			String newValue = sb.toString();
-			String keyString = hdbData.handNum + "-" + pdbData.nickname;
-			output.collect(new Text(keyString), new Text(newValue));
+			//String keyString = hdbData.handNum + "-" + pdbData.nickname;
 			//output.collect(new Text(keyString), new Text(newValue));
+			output.collect(new Text(newKey), new Text(newValue));
 		}
 	}
 	

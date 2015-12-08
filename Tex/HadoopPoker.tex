@@ -21,6 +21,7 @@
 \documentclass[twoside]{article}
 
 \usepackage{lipsum} % Package to generate dummy text throughout this template
+\usepackage{wrapfig}
 
 \usepackage[sc]{mathpazo} % Use the Palatino font
 \usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
@@ -114,7 +115,7 @@ We focus on one of the most popular forms of poker: No Limit Texas Hold 'Em (NHL
 
 \section{Motivation}
 
-Poker is an interesting game to study for several reasons. First, it is a multi-billion dollar industry, e.g. PokerStars.com was purchased for almost \$5 billion in 2014 REF and is only one of hundreds of online poker sites REF. Second, it is a classical game of logic, deception and mathematics, requiring a basic knowledge of probability and game theory. Third, many consider poker a model game for the development of machine learning, such as the University of Alberta Computer Poker Research Group (CPRG) REF. There is much analysis surrounding poker academically, e.g. CPRG, and commercially, e.g. analytical poker software like REF REF and REF.
+Poker is an interesting game to study for several reasons. First, it is a multi-billion dollar industry, e.g. PokerStars.com was purchased for almost \$5 billion in 2014 \cite{PokerStarsAcquired} and is only one of hundreds of online poker sites. Second, it is a classical game of logic, deception and mathematics, requiring a basic knowledge of probability and game theory. Third, many consider poker a model game for the development of machine learning, such as the University of Alberta Computer Poker Research Group (CPRG) \cite{SVMPoker}. There is much analysis surrounding poker academically, e.g. CPRG, and commercially, e.g. analytical poker software like Poker Tracker \cite{PokerTracker}.
 
 Our focus, NLHE tournament hand histories, is warranted for at least the following reasons:
 
@@ -123,9 +124,8 @@ Our focus, NLHE tournament hand histories, is warranted for at least the followi
 	\item Identifying profitable strategies. By examining many hands, one can identify which strategies tend to be profitable. Here it is critical to have a notion of the similarity of poker hands since identical situations will virtually never arise.
 \end{compactitem}
 
-We focus on the second reason by analyzing the simplest poker situations, as we mentioned above. Limiting the 
-
-Imperfect information.
+We focus on the second reason by analyzing the simplest poker situations, as we mentioned above. 
+Limiting the Imperfect information.
 Leveraging the opportunity to be first to act. 
 
 %------------------------------------------------
@@ -147,39 +147,67 @@ None of the research we encountered focused on pre-flop strategy.
 \subsection{Sources}
 We used two sources of hand histories.
 \begin{compactitem}
-\item{Poker Hand History} - Our first source is the private hand history of professional poker player Jaime Staples who kindly agreed to donate his data to us. Jaime Staples is a 23 year old Canadian with six figures of NLHE tournament cashes.
-\item{IRC Poker Database} - Seven years of poker data scraped from a dozen IRC poker channels. It was compiled and made available by the CPRG.
+\item{Poker Hand History} - Our first source is the private hand history of professional poker player Jaime Staples who kindly agreed to donate his data to us. Jaime Staples is a 23 year old Canadian with six figures of NLHE tournament cashes \cite{JaimeStaples}.
+\item{IRC Poker Database} - Seven years of poker data scraped from a dozen IRC poker channels. It was compiled and made available by the CPRG \cite{IRCDatabase}. 
+We only used the data from the no limit hold'em and  no limit hold'em tournament channels, resulting in 3.8 million poker hands (876MB of raw data). 
 \end{compactitem}
 
 \subsection{Feature Vectors}
-Our feature vectors consists of the action taken (fold or call/raise), number of players, player's position, all players' bankrolls, and the strength of the players cards. One of our biggest challenges was finding a feature vector that was possible based on both of our datasets. For example, the Jamie Staples data showed the players hands at all times whereas the IRC data did not. Similarly, the Jamie Staples data showed the potsize at the flop whereas the IRC data did not.  
+Our feature vectors consists of 12 features: \newline
+\indent - action taken (fold or call/raise) \newline
+\indent - number of players, assumed to be 9\newline
+\indent - player's position\newline
+\indent - all players' bankrolls\newline
+\indent - the strength of the player's cards\newline
 
-We normalized all the bankrolls according to the largest bankroll at the table. 
+One of our biggest challenges was finding a feature vector that was possible based on both of our datasets. For example, the Jamie Staples data showed the player's hands at all times whereas the IRC data did not. Similarly, the Jamie Staples data showed the potsize at the flop whereas the IRC data did not.  
+Furthermore, while Jamie Staples is a successful poker player \cite{JaimeStaples} the IRC database provided no guarantee about the skill levels of the players. Since our goal was to analyze \textit{successful} poker strategy we chose to use all of Jaime Staples' hand histories but only the IRC players' actions when a player won a hand.
+
+Since we only aimed to analyze first to act strategy we only kept data when a player folded before any calls or raises, or was first to call or raise. As an example, consider the following dequence of pre-flop actions: \newline
+
+Pos1 - big blind\newline
+\indent Pos2 - little blind\newline
+\indent Pos3 - fold\newline
+\indent Pos4 - fold\newline
+\indent Pos5 - fold\newline
+\indent Pos6 - call\newline
+\indent Pos7 - raise\newline
+\indent Pos8 - call\newline
+\indent Pos9 - fold\newline
+
+For this scenario we would have created a feature vector for positions 3, 4, 5, 6. Positions 3, 4, 5 would be kept since they all folded before any other players called or raised, and position 6 would be kept since it was the first to call or raise. 
+Positions 1 and 2 are always discarded since big and little blind are mandatory poker bets rather than voluntary actions and positions 7-9 would be discarded since they were not first to act. 
 
 \subsection{Design}
-Using map reduce, we standardized both of our data sets to a common format and merged them. Next, we ran the joint dataset into another map reduce that translated the player's cards, e.g. AcKs, into a hand strength value based on a table of poker hand probabilities. We used the resulting data set to train an SVM using Spark and to analyze the data using Hive. 
+Using map reduce, we standardized both of our data sets to the common format described in the previous section and merged them. Next, we ran the joint dataset into another map reduce that translated the player's cards, e.g. Ac3s, into a hand strength value based on a table of poker hand probabilities. We used the resulting data set to train an SVM using Spark and to analyze the data using Hive. 
 
-\includegraphics[width=1\columnwidth]{Flowchart.png}
-Figure1.png
-
+ %\begin{wrapfigure}[15]{l}{10cm}
+%\includegraphics[width=10cm,height=12\baselineskip]{Flowchart.png}
+%\end{wrapfigure}
 
 %------------------------------------------------
 
 \section{Results}
 
+asdfasdfasdf
+
 %--------------------------------------------
 
 \section{Future Work}
+
+asdfasdfasdf
 
 %------------------------------------------------
 
 \section{Conclusion}
 
+asdfasdfsdfa
+
 %------------------------------------------------
 
 \section{Acknowledgements}
 
-Many thanks to Jaime Staples for sending us his hand histories free of charge. 
+Many thanks to Jaime Staples for sending us his hand histories free of charge and to the University of Alberta Poker Group for collecting the IRC data. 
 
 
 %----------------------------------------------------------------------------------------
@@ -187,6 +215,16 @@ Many thanks to Jaime Staples for sending us his hand histories free of charge.
 %----------------------------------------------------------------------------------------
 
 \begin{thebibliography}{99} % Bibliography - this is intentionally simple in this template
+
+\bibitem{PokerStarsAcquired} Vardi, Nathan. Amaya Gaming In Geal To Buy PokerStars For \$4.9 Billion. Forbes. Retreived 13 June 2014. 
+
+\bibitem{PokerTracker} Poker Tracker 4 Review. Pokersoftware.com Retrieved 2012-08-26.
+
+\bibitem{JaimeStaples} Jaime Staples Poker Results and Statistics. Official Poker Rankings. Retreived 2015-09-08.
+
+\bibitem{IRCDatabase} Michael Maurer's IRC Poker Database. Retreived 12-8-2015.
+\url{http://poker.cs.ualberta.ca/irc_poker_database.html}
+
 \bibitem{SVMPoker} J Pfund. Support Vector Machines in the Machine Learning: Classifier for a Texas Hold'em Poker Bot.  University of Pennsylvania, 2007.
 
 \bibitem{clustering} N. Bard, D. Nicholas, C. Szepesvári, and M. Bowling. Decision-theoretic Clustering of Strategies. University of Alberta. 2015
