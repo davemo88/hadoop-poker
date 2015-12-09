@@ -103,9 +103,9 @@ No Limit Hold 'Em (NLHE) is a fun recreational game for many around the world an
 \section{Introduction}
 An online poker site, e.g. PokerStars.com will easily play billions of hands per year and a professional player may play hundreds of thousands if not millions of hands a year. Each of these hands is logged as part of what is called a hand history.
 
-Hand histories are useful for both players and poker game organizers. Players may wish to improve their play whereas organizers, e.g. PokerStars, may wish to observe how players act in order to offer the most attractive games or promotions. A single professional player provided ten months of hand histories to us and it was about a gigabyte of text. Thus a single poker site could easily generate many terabytes of hand histories each year and so Hadoop is an appropriate platform for hand history analysis. Furthermore, hand history analysis is essentially log file analysis, a common use case for technology like Hadoop.
+We acquired some of this data to analyze in Hadoop with the intention of developing poker strategy guidelines. Our sources were 10 month of hand histories from a professional poker player and 7 years of hand histories from and IRC poker channel. 
 
-We focus on one of the most popular forms of poker: No Limit Texas Hold 'Em (NHLE) tournaments REF. One can find a detailed description at REF. In particular we concern ourselves with the simplest situations in the game. Poker hands vary significantly in their complexity and so we limit ourselves to the cases in which a player has the opportunity to make the first bet. We use support vector machines (SVMs) REF to predict when a player should enter the hand and use a professional player's hand history as the bar for good performance.
+We focused on one of the most popular forms of poker: No Limit Texas Hold 'Em (NHLE) tournaments. One can find a detailed description at \cite{texashold'em}. In particular we concerned ourselves with the simplest situations in the game. Poker hands vary significantly in their complexity and so we limited ourselves to the cases in which a player has the opportunity to make the first bet. We used support vector machines (SVMs) to predict when a player should enter the hand and used a professional player's hand history as the bar for good performance.
 
 %The goal of this analytic is to extract and present information from online poker hand logs. Our analysis would be restricted to No Limit Texas Hold'em Tournaments, an extremely popular form of poker. While much research has been devoted to post-flop strategy we chose to focus on pre-flop strategy. Specifially, we focused on what a player's action should be when they are in a position to be first to act. In other words, if all previous players have either folded or checked, what move should a player perform based on his or her cards, bankroll, and the bankrolls of the other players? The position of first to act is an especially interesting one because the player has more leverage for bluffing or setting the tone of a game. 
 
@@ -125,8 +125,6 @@ Our focus, NLHE tournament hand histories, is warranted for at least the followi
 \end{compactitem}
 
 We focus on the second reason by analyzing the simplest poker situations, as we mentioned above. 
-Limiting the Imperfect information.
-Leveraging the opportunity to be first to act. 
 
 %------------------------------------------------
 
@@ -143,12 +141,11 @@ None of the research we encountered focused on pre-flop strategy.
 
 \section{Design}
 
-
 \subsection{Sources}
 We used two sources of hand histories.
 \begin{compactitem}
 \item{Poker Hand History} - Our first source is the private hand history of professional poker player Jaime Staples who kindly agreed to donate his data to us. Jaime Staples is a 23 year old Canadian with six figures of NLHE tournament cashes \cite{JaimeStaples}.
-\item{IRC Poker Database} - Seven years of poker data scraped from a dozen IRC poker channels. It was compiled and made available by the CPRG \cite{IRCDatabase}. 
+\item{IRC Poker Database} - Our second source is seven years of poker data scraped from a dozen IRC poker channels. It was compiled and made available by the CPRG \cite{IRCDatabase}. 
 We only used the data from the no limit hold'em and  no limit hold'em tournament channels, resulting in 3.8 million poker hands (876MB of raw data). 
 \end{compactitem}
 
@@ -161,9 +158,7 @@ Our feature vectors consists of 12 features: \newline
 \indent - the strength of the player's cards\newline
 
 One of our biggest challenges was finding a feature vector that was possible based on both of our datasets. For example, the Jamie Staples data showed the player's hands at all times whereas the IRC data did not. Similarly, the Jamie Staples data showed the potsize at the flop whereas the IRC data did not.  
-Furthermore, while Jamie Staples is a successful poker player \cite{JaimeStaples} the IRC database provided no guarantee about the skill levels of the players. Since our goal was to analyze \textit{successful} poker strategy we chose to use all of Jaime Staples' hand histories but only the IRC players' actions when a player won a hand.
-
-Since we only aimed to analyze first to act strategy we only kept data when a player folded before any calls or raises, or was first to call or raise. As an example, consider the following sequence of pre-flop actions: \newline
+Furthermore, while Jamie Staples is a successful poker player \cite{JaimeStaples} the IRC database provided no guarantee about the skill levels of the players. Since our goal was to analyze \textit{successful} poker strategy we chose to use all of Jaime Staples' hand histories but only the IRC players' actions when a player won a hand. Since we only aimed to analyze first to act strategy we only kept data when a player folded before any calls or raises, or was first to call or raise. As an example, consider the following sequence of pre-flop actions: 
 
 Pos1 - big blind\newline
 \indent Pos2 - little blind\newline
@@ -173,7 +168,7 @@ Pos1 - big blind\newline
 \indent Pos6 - call\newline
 \indent Pos7 - raise\newline
 \indent Pos8 - call\newline
-\indent Pos9 - fold\newline
+\indent Pos9 - fold
 
 For this scenario we would have created a feature vector for positions 3, 4, 5, 6. Positions 3, 4, 5 would be kept since they all folded before any other players called or raised, and position 6 would be kept since it was the first to call or raise. 
 Positions 1 and 2 are always discarded since big and little blind are mandatory poker bets rather than voluntary actions and positions 7-9 would be discarded since they were not first to act. 
@@ -182,7 +177,7 @@ Positions 1 and 2 are always discarded since big and little blind are mandatory 
 
 \begin{figure}[H]
   \centering
-  \centerline{\includegraphics[width=0.35\columnwidth]{Flowchart.png}}
+  \centerline{\includegraphics[width=0.5\columnwidth]{Flowchart.png}}
    \caption{Data Flowchart}
   \label{fig:Data flow}
 \end{figure}
@@ -195,11 +190,11 @@ Using map reduce, we standardized both of our data sets to the common format des
 
 \subsection{Position and hand strength}
 
-The most compelling relationship that emerged from our data is the relationship between hand strength and position when deciding whether or not to play a hand. Figure 2 shows all of our cleaned data organized by position and hand strength. There are 2 clear observations to be made about our data as a whole: that there are more folds than plays and there are fewer of both in the higher positions. Both of these observations, however, are artifacts of our data collection and do not reflect poker strategy. As in the example above, it is possible for one hand of poker data to yield several feature vectors for folding but only one for calling or raising. This explains the larger amount of folding data. And since we only sought to analyze first to act, there is a higher probability of actions occurring in the early positions rather than the latest. This explains the decreasing amount of data as position increases.
+By manipulating the data in Hive, we noticed a clear relationship between position, hand strength, and whether or not to play a hand. Figure 2 shows all of our cleaned data organized by position and hand strength. There are 2 clear observations to be made about our data as a whole: there are significantly more folds than plays and there are fewer of both in the higher positions. Both of these observations, however, are artifacts of our data collection and do not reflect poker strategy. As in the example above, it is possible for one hand of poker data to yield several feature vectors for folding but only one for calling or raising. This explains the larger amount of folding data. And since we only sought to analyze first to act, there is a higher probability of actions occurring in the early positions rather than the latest. This explains the decreasing amount of data as position increases.
 
 \begin{figure}[H]
   \centering
-  \centerline{\includegraphics[width=1\columnwidth]{Allhands.png}}
+  \centerline{\includegraphics[width=1.1\columnwidth]{Allhands.png}}
    \caption{All Hands}
   \label{fig:allHands}
 \end{figure}
@@ -208,39 +203,39 @@ To further analyze our data, we divided all the feature vectors by hand strength
 
 \begin{figure}[H]
   \centering
-  \centerline{\includegraphics[width=1\columnwidth]{9thDecile.png}}
+  \centerline{\includegraphics[width=1.1\columnwidth]{9thDecile.png}}
    \caption{9thDecile}
   \label{fig:9thDecile}
 \end{figure}
 
-On the opposite end of the spectrum, the 3rd decile is the worst range of card strengths. We expected figure\ref{fig:3rdDecile} to show entirely folds, thus representing the exact opposite of figure\ref{fig:9thDecile}. Instead, we noticed a .014\% total play rate, even among these worst cards. This, we suspect, is the player intentionally misleading the others so their actions don't become too predictable. The need to do this decreases almost linearly as the position increases, starting with 0.027\% play rate at position 3 down to 0.005\% in position 9. 
+On the opposite end of the spectrum, the 3rd decile is the worst range of card strengths. We expected figure\ref{fig:3rdDecile} to show entirely folds, thus representing the exact opposite of figure\ref{fig:9thDecile}. Instead, we noticed average of 0.014\% total play rate, even among these worst cards. This, we suspect, is the player intentionally misleading the others so their actions don't become too predictable. The need to do this decreases almost linearly as the position increases, starting with 0.026\% play rate at position 3 down to 0.008\% in position 9. 
 
 \begin{figure}[H]
   \centering
-  \centerline{\includegraphics[width=1\columnwidth]{3rdDecile.png}}
+  \centerline{\includegraphics[width=1.1\columnwidth]{3rdDecile.png}}
    \caption{3rdDecile}
   \label{fig:3rdDecile}
 \end{figure}
 
-In the middle of the hand strength spectrum, figures \ref{fig:4thDecile}, \ref{fig:5thDecile}, \ref{fig:6thDecile} show the transition from mostly folds to mostly plays. As demonstrated in the figures, the lower positions consistently have a higher fold rate than the higher positions. This is because players with higher positions have already had a chance to gauge the other players' confidences in their hands and with strategic betting can win with a larger range of hand strengths.
+In the middle of the hand strength spectrum, figures \ref{fig:4thDecile}, \ref{fig:5thDecile}, \ref{fig:6thDecile} show the transition from mostly folds to mostly plays. As demonstrated in the figures, the lower positions consistently have a higher fold rate than the higher positions. This is because players with higher positions have already had a chance to gauge the other players' confidences in their hands and with strategic betting can win with a larger range of hand strengths. 
 
 \begin{figure}[H]
   \centering
-  \centerline{\includegraphics[width=1\columnwidth]{4thDecile.png}}
+  \centerline{\includegraphics[width=1.1\columnwidth]{4thDecile.png}}
    \caption{4thDecile}
   \label{fig:4thDecile}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \centerline{\includegraphics[width=1\columnwidth]{5thDecile.png}}
+  \centerline{\includegraphics[width=1.1\columnwidth]{5thDecile.png}}
    \caption{5thDecile}
   \label{fig:5thDecile}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \centerline{\includegraphics[width=1\columnwidth]{6thDecile.png}}
+  \centerline{\includegraphics[width=1.1\columnwidth]{6thDecile.png}}
    \caption{6thDecile}
   \label{fig:6thDecile}
 \end{figure}
@@ -258,16 +253,16 @@ In the middle of the hand strength spectrum, figures \ref{fig:4thDecile}, \ref{f
 
 \section{Future Work}
 
-asdfasdfasdf
+We should extend this analysis to post flop strategy. 
 
 %------------------------------------------------
 
 \section{Conclusion}
 
-Our data revealed several fundamental strategies:
+Our data revealed several fundamental poker strategies:
 \begin{compactitem}
 \item{} Always play hands in the 9th hand strength decile. 
-\item{} Almost always fold hands in the 3rd decile, but maintain a small ratio of plays depending on your position. 0.03\% plays in the 3rd position and 0.005\% plays in positions7, 8, 9. 
+\item{} Almost always fold hands in the 3rd decile but maintain a small ratio of plays depending on your position: 0.03\% plays in the 3rd position and 0.005\% plays in positions7, 8, 9. 
 \item{}Be more conservative with hand strength in the early positions. For example, in the 6th hand strength decile, hands should be played 64\% of the time in the 3rd position but 98\% of the time in 9th position.
 \end{compactitem}
 
@@ -293,6 +288,9 @@ Many thanks to Jaime Staples for sending us his hand histories free of charge an
 
 \bibitem{IRCDatabase} Michael Maurer's IRC Poker Database. Retreived 12-8-2015.
 \url{http://poker.cs.ualberta.ca/irc_poker_database.html}
+
+\bibitem{TexasHoldem} Wikipedia. Retreived 12-8-2015.
+\url{https://en.wikipedia.org/wiki/Texas_hold_%27em}
 
 \bibitem{SVMPoker} J Pfund. Support Vector Machines in the Machine Learning: Classifier for a Texas Hold'em Poker Bot.  University of Pennsylvania, 2007.
 
