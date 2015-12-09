@@ -1,0 +1,36 @@
+--Hive script
+--After running out data through 3 map reduces to clean and format the code, we began our analysis
+--by examining the data in hive.
+--These some of the commands we used. 
+--amh564-dk2353
+
+drop table test;
+
+--create a table for all of our feature vectors
+create table test(key int, numPlayers float, position float, bank0 float, bank1 float, bank2 float, bank3 float, bank4 float, bank5 float, bank6 float, bank7 float, bank8 float, handStrength float) row format delimited fields terminated by ' ';
+
+--double check for success
+describe test;
+show tables;
+
+--load our entire dataset
+load data local inpath "all_hands.txt" into table test;
+
+--calculate total number of hands in our dataset
+select count(*) from test;
+
+--show total number of plays vs fold
+select key, count(*) from test group by key;
+
+--show number of datapoints for each player position
+select position, count(*) from test group by position;
+
+--show the number of actions for each handstrength value
+select handstrength, count(*) from test group by handstrength;
+
+--show all handstrengths where action was to call or raise
+select handstrength from test where key == 1;
+select handstrength from test where key == 0;
+
+select handstrength, count(*) from test where key ==1 group by handstrength;
+select handstrength, count(*) from test where key ==0 group by handstrength;

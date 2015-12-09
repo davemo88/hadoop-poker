@@ -1,12 +1,12 @@
 HADOOP POKER: amh564-dk2353
 
 Our project used two sources of poker data to draw conclusions about poker strategy.
-Our code submission includes 3 mapreduce programs and one Spark program.
+Our code submission includes 3 mapreduce programs, one Spark program, and one Hive script.
 
-1. IRC Feature Extraction
+1. Map Reduce (java): IRC Feature Extraction
 This cleans and organizes our first data source: an IRC-Poker database compiled by the University of Alberta.
 The map reduce project has several steps
-     --merge all the database's files into a set of chornological poker actions
+     --merge all the database's files into a set of chronological poker actions
      --remove invalid data (ex: instances when a player loses or a player's hands aren't revealed)
      --normalizes relevant values
      --outputs a set of feature vectors for use in our SVM.
@@ -14,15 +14,15 @@ The map reduce project has several steps
 buildAndRun.sh was used to build and test the map reduce code
 webscrape.py was used to download all the IRC data from the IRC database website. 
 
-2. PokerStars Feature Extraction
-This get feature vectors from the second data source: Professional Poker player Jaime
+2. Map Reduce (python): PokerStars Feature Extraction
+This gets feature vectors from the second data source: Professional Poker player Jaime
 Staples' hand history for Jan-Oct 2015. See the mapper for an example of the data. 
 Since the hand history formats hands in a very human-friendly way (i.e. not computer
 friendly), we have to iterate through many lines of these files to produce a single
 record to be used for our purposes. See comments in the mapper for the step-by-step
 details.
 
-3. Hand Strength Calculator
+3. Map Reduce (python): Hand Strength Calculator
 Both the IRC and PokerStars Feature Extraction programs represent the player's cards as a string (ex: 2cKd = 2 of clubs and King of diamonds). We ran the output of both the IRC and PokerStars map reduce program through this program to convert the string representation of the cards into a normalized value that can be used in our SVM. 
 
 4. Spark SVMs with MLLib (poker_svm.py)
@@ -30,5 +30,5 @@ This program trains SVMs to predict if a hand should be played or folded. We tra
 SVMs with different regularization parameters to find the best value. The input files
 are the outputs of the Hand Strength Calculator.
 
-
-
+5. Hive Queries
+We used hive to navigate our cleaned data and to manually draw conclusions about smart poker strategy. These Hive queries were the basis for the many graphs used in our paper. 
