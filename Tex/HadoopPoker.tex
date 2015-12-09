@@ -20,16 +20,16 @@
 
 \documentclass[twoside]{article}
 
-\usepackage{lipsum} % Package to generate dummy text throughout this template
-\usepackage{wrapfig}
+%\usepackage{wrapfig}
 
 \usepackage[sc]{mathpazo} % Use the Palatino font
 \usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
 \linespread{1.05} % Line spacing - Palatino needs more space between lines
 \usepackage{microtype} % Slightly tweak font spacing for aesthetics
 \usepackage{graphicx}
-\graphicspath{ {images/} }
-\graphicspath{ {figures/} }
+%\usepackage{subfig} % make it possible to include more than one captioned figure/table in a
+%\graphicspath{ {images/} }
+%\graphicspath{ {figures/} }
 
 \usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
 \usepackage{multicol} % Used for the two-column layout of the document
@@ -89,7 +89,7 @@
 \begin{abstract}
 
 \noindent {
-No Limit Hold 'Em (NLHE) is a fun recreational game for many around the world and a TV sensation. This project develops a tool for analyzing the simplest decisions in NLHE, namely when the player when has opportunity to make the first move in a hand. We use hand histories, i.e. the logs of game actions in poker, to train SVMs to classify poker situations. This tool helps players answer the question: “Should I play this hand?”
+No Limit Hold 'Em (NLHE) is a fun recreational game for many around the world and a TV sensation. This project develops a tool for analyzing the simplest decisions in NLHE, namely when the player when has opportunity to make the first move in a hand. We use hand histories, i.e. the logs of game actions in poker, to train SVMs to classify poker situations. This tool helps players answer the question:''Should I play this hand?''
 } 
 
 \end{abstract}
@@ -163,7 +163,7 @@ Our feature vectors consists of 12 features: \newline
 One of our biggest challenges was finding a feature vector that was possible based on both of our datasets. For example, the Jamie Staples data showed the player's hands at all times whereas the IRC data did not. Similarly, the Jamie Staples data showed the potsize at the flop whereas the IRC data did not.  
 Furthermore, while Jamie Staples is a successful poker player \cite{JaimeStaples} the IRC database provided no guarantee about the skill levels of the players. Since our goal was to analyze \textit{successful} poker strategy we chose to use all of Jaime Staples' hand histories but only the IRC players' actions when a player won a hand.
 
-Since we only aimed to analyze first to act strategy we only kept data when a player folded before any calls or raises, or was first to call or raise. As an example, consider the following dequence of pre-flop actions: \newline
+Since we only aimed to analyze first to act strategy we only kept data when a player folded before any calls or raises, or was first to call or raise. As an example, consider the following sequence of pre-flop actions: \newline
 
 Pos1 - big blind\newline
 \indent Pos2 - little blind\newline
@@ -179,17 +179,85 @@ For this scenario we would have created a feature vector for positions 3, 4, 5, 
 Positions 1 and 2 are always discarded since big and little blind are mandatory poker bets rather than voluntary actions and positions 7-9 would be discarded since they were not first to act. 
 
 \subsection{Design}
-Using map reduce, we standardized both of our data sets to the common format described in the previous section and merged them. Next, we ran the joint dataset into another map reduce that translated the player's cards, e.g. Ac3s, into a hand strength value based on a table of poker hand probabilities. We used the resulting data set to train an SVM using Spark and to analyze the data using Hive. 
 
- %\begin{wrapfigure}[15]{l}{10cm}
-%\includegraphics[width=10cm,height=12\baselineskip]{Flowchart.png}
-%\end{wrapfigure}
+\begin{figure}[H]
+  \centering
+  \centerline{\includegraphics[width=0.45\columnwidth]{Flowchart.png}}
+   \caption{Data Flowchart}
+  \label{fig:Data flow}
+\end{figure}
+
+Using map reduce, we standardized both of our data sets to the common format described in the previous section and merged them. Next, we ran the joint dataset into another map reduce that translated the player's cards, e.g. Ac3s, into a hand strength value based on a table of poker hand probabilities. We used the resulting data set to train an SVM using Spark and to analyze the data using Hive. 
 
 %------------------------------------------------
 
 \section{Results}
 
-asdfasdfasdf
+\subsection{Position and hand strength}
+
+The most compelling relationship that emerged from our data is the relationship between hand strength and position when deciding whether or not to play a hand. Figure 2 shows all of our cleaned data organized by position and hand strength. There are 2 clear observations to be made about our data as a whole: that there are more folds than plays and there are fewer of both in the higher positions. Both of these observations, however, are artifacts of our data collection and do not reflect poker strategy. As in the example above, it is possible for one hand of poker data to yield several feature vectors for folding but only one for calling or raising. This explains the larger amount of folding data. And since we only sought to analyze first to act, there is a higher probability of actions occurring in the early positions rather than the latest. This explains the decreasing amount of data as position increases.
+
+\begin{figure}[H]
+  \centering
+  \centerline{\includegraphics[width=1\columnwidth]{Allhands.png}}
+   \caption{All Hands}
+  \label{fig:allHands}
+\end{figure}
+
+To further analyze our data, we divided all the feature vectors by hand strength deciles ranging from 3 to 9 where 3 represents bad cards (e.g. 4 of hearts and 2 of spades) and 9 represents promising cards (e.g. Ace and King of the same suit). Figure\ref{fig:9thDecile} clearly shows that cards in the 9th decile should never be folded. Out of the 1395 hands displayed, only one was folded in pos 7. This results in a .0007\% fold rate across all positions. 
+
+\begin{figure}[H]
+  \centering
+  \centerline{\includegraphics[width=1\columnwidth]{9thDecile.png}}
+   \caption{9thDecile}
+  \label{fig:9thDecile}
+\end{figure}
+
+On the opposite end of the spectrum, the 3rd decile is the worst range of card strengths. We expected figure\ref{fig:3rdDecile} to show entirely folds, thus representing the exact opposite of figure\ref{fig:9thDecile}. Instead, we noticed a .014\% total play rate, even among these worst cards. This, we suspect, is the player intentionally misleading the others so their actions don't become too predictable. The need to do this decreases almost linearly as the position increases, starting with 0.027\% play rate at position 3 down to 0.005\% in position 9. 
+
+\begin{figure}[H]
+  \centering
+  \centerline{\includegraphics[width=1\columnwidth]{3rdDecile.png}}
+   \caption{3rdDecile}
+  \label{fig:3rdDecile}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \centerline{\includegraphics[width=1\columnwidth]{4thDecile.png}}
+   \caption{4thDecile}
+  \label{fig:4thDecile}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \centerline{\includegraphics[width=1\columnwidth]{5thDecile.png}}
+   \caption{5thDecile}
+  \label{fig:5thDecile}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \centerline{\includegraphics[width=1\columnwidth]{6thDecile.png}}
+   \caption{6thDecile}
+  \label{fig:6thDecile}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \centerline{\includegraphics[width=1\columnwidth]{7thDecile.png}}
+   \caption{7thDecile}
+  \label{fig:7thDecile}
+\end{figure}
+
+\subsection{Support Vector Machine}
+
+\begin{figure}[H]
+  \centering
+  \centerline{\includegraphics[width=1\columnwidth]{SVM.png}}
+   \caption{SVM Errors}
+  \label{fig:SVM}
+\end{figure}
 
 %--------------------------------------------
 
