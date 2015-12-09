@@ -101,9 +101,9 @@ No Limit Hold 'Em (NLHE) is a fun recreational game for many around the world an
 \begin{multicols}{2} % Two-column layout throughout the main article text
 
 \section{Introduction}
-An online poker site, e.g. PokerStars.com REF, will easily play billions of hands per year REF and a professional player may play hundreds of thousands if not millions of hands a year REF. Each of these hands is logged as part of what is called a hand history.
+An online poker site, e.g. PokerStars.com will easily play billions of hands per year and a professional player may play hundreds of thousands if not millions of hands a year. Each of these hands is logged as part of what is called a hand history.
 
-Hand histories are useful for both players and poker game organizers. Players may wish to improve their play whereas organizers, e.g. PokerStars, may wish to observe how players act in order to offer the most attractive games or promotions. A single professional player provided ten months of hand histories to us and it was about a gigabyte of text. Thus a single poker site could easily generate many terabytes of hand histories each year and so Hadoop is an appropriate platform for hand history analysis. Furthermore, hand history analysis is essentially log file analysis, a common use case for technology like Hadoop REF.
+Hand histories are useful for both players and poker game organizers. Players may wish to improve their play whereas organizers, e.g. PokerStars, may wish to observe how players act in order to offer the most attractive games or promotions. A single professional player provided ten months of hand histories to us and it was about a gigabyte of text. Thus a single poker site could easily generate many terabytes of hand histories each year and so Hadoop is an appropriate platform for hand history analysis. Furthermore, hand history analysis is essentially log file analysis, a common use case for technology like Hadoop.
 
 We focus on one of the most popular forms of poker: No Limit Texas Hold 'Em (NHLE) tournaments REF. One can find a detailed description at REF. In particular we concern ourselves with the simplest situations in the game. Poker hands vary significantly in their complexity and so we limit ourselves to the cases in which a player has the opportunity to make the first bet. We use support vector machines (SVMs) REF to predict when a player should enter the hand and use a professional player's hand history as the bar for good performance.
 
@@ -182,7 +182,7 @@ Positions 1 and 2 are always discarded since big and little blind are mandatory 
 
 \begin{figure}[H]
   \centering
-  \centerline{\includegraphics[width=0.45\columnwidth]{Flowchart.png}}
+  \centerline{\includegraphics[width=0.35\columnwidth]{Flowchart.png}}
    \caption{Data Flowchart}
   \label{fig:Data flow}
 \end{figure}
@@ -222,6 +222,8 @@ On the opposite end of the spectrum, the 3rd decile is the worst range of card s
   \label{fig:3rdDecile}
 \end{figure}
 
+In the middle of the hand strength spectrum, figures \ref{fig:4thDecile}, \ref{fig:5thDecile}, \ref{fig:6thDecile} show the transition from mostly folds to mostly plays. As demonstrated in the figures, the lower positions consistently have a higher fold rate than the higher positions. This is because players with higher positions have already had a chance to gauge the other players' confidences in their hands and with strategic betting can win with a larger range of hand strengths.
+
 \begin{figure}[H]
   \centering
   \centerline{\includegraphics[width=1\columnwidth]{4thDecile.png}}
@@ -243,13 +245,6 @@ On the opposite end of the spectrum, the 3rd decile is the worst range of card s
   \label{fig:6thDecile}
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-  \centerline{\includegraphics[width=1\columnwidth]{7thDecile.png}}
-   \caption{7thDecile}
-  \label{fig:7thDecile}
-\end{figure}
-
 \subsection{Support Vector Machine}
 
 \begin{figure}[H]
@@ -269,7 +264,13 @@ asdfasdfasdf
 
 \section{Conclusion}
 
-asdfasdfsdfa
+Our data revealed several fundamental strategies:
+\begin{compactitem}
+\item{} Always play hands in the 9th hand strength decile. 
+\item{} Almost always fold hands in the 3rd decile, but maintain a small ratio of plays depending on your position. 0.03\% plays in the 3rd position and 0.005\% plays in positions7, 8, 9. 
+\item{}Be more conservative with hand strength in the early positions. For example, in the 6th hand strength decile, hands should be played 64\% of the time in the 3rd position but 98\% of the time in 9th position.
+\end{compactitem}
+
 
 %------------------------------------------------
 
