@@ -102,14 +102,8 @@ No Limit Hold 'Em (NLHE) is a fun recreational game for many around the world an
 
 \section{Introduction}
 An online poker site, e.g. PokerStars.com will easily play billions of hands per year and a professional poker player may play hundreds of thousands if not millions of hands per year. Each of these hands is logged as part of what is called a hand history.
-
-We acquired some of this data to analyze in Hadoop with the intention of developing poker strategy guidelines. Our sources were 10 month of hand histories from a professional poker player and 7 years of hand histories from an IRC poker channel. 
-
+We acquired hand histories to analyze in Hadoop with the intention of developing poker strategy guidelines. Our sources were 10 month of hand histories from a professional poker player and 7 years of hand histories from an IRC poker channel.
 We focused on one of the most popular forms of poker: No Limit Texas Hold 'Em (NHLE) tournaments. One can find a detailed description at \cite{TexasHoldem}. In particular we concerned ourselves with the simplest situations in the game. Poker hands vary significantly in their complexity and so we limited ourselves to the cases in which a player has the opportunity to make the first bet and is not in the blinds. We created feature vector representations of these situations, generated summary statistics, and used support vector machines (SVMs) to predict when a player should play or fold a hand, using the professional player's hand history as the bar for good performance.
-
-%The goal of this analytic is to extract and present information from online poker hand logs. Our analysis would be restricted to No Limit Texas Hold'em Tournaments, an extremely popular form of poker. While much research has been devoted to post-flop strategy we chose to focus on pre-flop strategy. Specifially, we focused on what a player's action should be when they are in a position to be first to act. In other words, if all previous players have either folded or checked, what move should a player perform based on his or her cards, bankroll, and the bankrolls of the other players? The position of first to act is an especially interesting one because the player has more leverage for bluffing or setting the tone of a game. 
-
-% Dummy text
 
 %------------------------------------------------
 
@@ -237,7 +231,7 @@ In the middle of the hand strength spectrum, figures \ref{fig:4thDecile}, \ref{f
 
 We used Spark to train linear and second degree polynomial kernel SVMs to do binary classification of feature vectors, the two classes being Play (1) and Fold(0). We ranged the regularization parameter $\lambda$ between all odd powers of $2$ between $2^-31$ and $2^3$. The SVM algorithm in Spark uses stochastic gradient descent (SGD). Each SVM was trained 50 iterations of SGD with step size 1 and using the entire sample for each mini-batch. These are the usual parameters of SGD that determine how many examples are used to compute the gradient at each iteration (mini-batch size) and how far to move in the direction of the gradient (step size) before computing it again in the next iteration. We established this range experimentally which suggested that there would be little change in training error outside outside this range. Our best training errors were with small $\lambda$ although none were excellent.
 
-The linear SVM performed best with very little regularization and the degree two polynomial kernel performed best with medium regularization, relatively speaking. Both performed poorly with large regularization. However our results are encouraging since we did manage to have some improvement over random guessing with very simple features. The feature space for the linear SVM is the same as feature vectors described previously and only have dimension 12. The polynomial kernel had dimension 23 feature space which is still relatively low and could be much, much larger for poker games. See figure \ref{fig:SVM} for a graphical comparison.
+The linear SVM performed best with very little regularization and the degree two polynomial kernel performed best with medium regularization, relatively speaking. Both performed poorly with large regularization. However our results are encouraging since we did manage to have some improvement over random guessing with very simple features. The feature space for the linear SVM is the same as feature vectors described previously and only has dimension 12. The polynomial kernel had dimension 23 features which is still relatively low and could be much, much larger for poker games. See figure \ref{fig:SVM} for a graphical comparison of the linear and polynomial kernel SVM training error.
 
 \begin{figure}[H]
   \centering
@@ -250,7 +244,7 @@ The linear SVM performed best with very little regularization and the degree two
 
 \section{Future Work}
 
-This work could be improved in several ways. First, we could use a far larger poker data set of hand histories by professional players. Even though Jaime's hands numbered in the hundreds of thousands, we could have analyzed many more. This data was better for our purposes since the hands were played by a successful professional and they contained both positive and negative examples, whereas the data from IRC contained only positive examples and the players were of dubious quality. We could also design richer features. We chose a simple feature set here as a starting point, but we may be able to have much better classification results if we had better features. Similarly we could improve the SVM work with existing features by experimenting with other more complex kernels. We should also compare the SVM results with other classification algorithms such as logistic regression or k-nearest neighbor.
+This work could be improved in several ways. First, we could use a far larger poker data set of hand histories by professional players. Even though Jaime's hands numbered in the hundreds of thousands, we could have analyzed many more. This data was better for our purposes since the hands were played by a successful professional and they contained both positive and negative examples, whereas the data from IRC contained only positive examples and the players themselves were of dubious quality. We could also design richer features. We chose a simple feature set here as a starting point, but we may be able to have much better classification results if we had better features. Similarly we could improve the SVM work with the existing features by experimenting with other more complex kernels. We could also compare the SVM results with other classification algorithms such as logistic regression or k-nearest neighbor.
 
 %------------------------------------------------
 
@@ -261,9 +255,8 @@ Our data revealed several fundamental poker strategies when the player has the o
 \item{} Always play the best hands, e.g. those in the 7th, 8th, and 9th deciles, regardless of position. 
 \item{} Almost always fold the worst hands, e.g. those in the 3rd and 4th deciles, especially in the lower positions.
 \item{}Be more conservative with hand strength in the early positions. For example, sample hands in 6th hand strength decile were played 64\% of the time in the 3rd position but 98\% of the time in 9th position.
-
-Furthermore, our results were encouraging in designing classifiers than can predict the correct actions to take in NLHE poker tournaments since we were able to do better than random using both modest features and modest number of examples.
 \end{compactitem}
+Furthermore, our results were encouraging in designing classifiers than can predict the correct actions to take in NLHE poker tournaments since we were able to do better than random using both modest features and modest number of examples. This project was an excellent exercise in utilizing technologies from the Hadoop ecosystem as well as in thinking about poker strategy.
 
 
 %------------------------------------------------
