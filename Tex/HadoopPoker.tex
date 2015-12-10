@@ -101,11 +101,11 @@ No Limit Hold 'Em (NLHE) is a fun recreational game for many around the world an
 \begin{multicols}{2} % Two-column layout throughout the main article text
 
 \section{Introduction}
-An online poker site, e.g. PokerStars.com will easily play billions of hands per year and a professional player may play hundreds of thousands if not millions of hands a year. Each of these hands is logged as part of what is called a hand history.
+An online poker site, e.g. PokerStars.com will easily play billions of hands per year and a professional poker player may play hundreds of thousands if not millions of hands per year. Each of these hands is logged as part of what is called a hand history.
 
-We acquired some of this data to analyze in Hadoop with the intention of developing poker strategy guidelines. Our sources were 10 month of hand histories from a professional poker player and 7 years of hand histories from and IRC poker channel. 
+We acquired some of this data to analyze in Hadoop with the intention of developing poker strategy guidelines. Our sources were 10 month of hand histories from a professional poker player and 7 years of hand histories from an IRC poker channel. 
 
-We focused on one of the most popular forms of poker: No Limit Texas Hold 'Em (NHLE) tournaments. One can find a detailed description at \cite{texashold'em}. In particular we concerned ourselves with the simplest situations in the game. Poker hands vary significantly in their complexity and so we limited ourselves to the cases in which a player has the opportunity to make the first bet. We used support vector machines (SVMs) to predict when a player should enter the hand and used a professional player's hand history as the bar for good performance.
+We focused on one of the most popular forms of poker: No Limit Texas Hold 'Em (NHLE) tournaments. One can find a detailed description at \cite{TexasHoldem}. In particular we concerned ourselves with the simplest situations in the game. Poker hands vary significantly in their complexity and so we limited ourselves to the cases in which a player has the opportunity to make the first bet and is not in the blinds. We created feature vector representations of these situations, generated summary statistics, and used support vector machines (SVMs) to predict when a player should play or fold a hand, using the professional player's hand history as the bar for good performance.
 
 %The goal of this analytic is to extract and present information from online poker hand logs. Our analysis would be restricted to No Limit Texas Hold'em Tournaments, an extremely popular form of poker. While much research has been devoted to post-flop strategy we chose to focus on pre-flop strategy. Specifially, we focused on what a player's action should be when they are in a position to be first to act. In other words, if all previous players have either folded or checked, what move should a player perform based on his or her cards, bankroll, and the bankrolls of the other players? The position of first to act is an especially interesting one because the player has more leverage for bluffing or setting the tone of a game. 
 
@@ -115,16 +115,7 @@ We focused on one of the most popular forms of poker: No Limit Texas Hold 'Em (N
 
 \section{Motivation}
 
-Poker is an interesting game to study for several reasons. First, it is a multi-billion dollar industry, e.g. PokerStars.com was purchased for almost \$5 billion in 2014 \cite{PokerStarsAcquired} and is only one of hundreds of online poker sites. Second, it is a classical game of logic, deception and mathematics, requiring a basic knowledge of probability and game theory. Third, many consider poker a model game for the development of machine learning, such as the University of Alberta Computer Poker Research Group (CPRG) \cite{SVMPoker}. There is much analysis surrounding poker academically, e.g. CPRG, and commercially, e.g. analytical poker software like Poker Tracker \cite{PokerTracker}.
-
-Our focus, NLHE tournament hand histories, is warranted for at least the following reasons:
-
-\begin{compactitem}
-	\item Characterizing individual players. If one gathers sufficient data about a specific player, patterns in that player's play may become identifiable and thus exploitable when playing against that player. A player could also examine themselves to find where they are losing the most value.
-	\item Identifying profitable strategies. By examining many hands, one can identify which strategies tend to be profitable. Here it is critical to have a notion of the similarity of poker hands since identical situations will virtually never arise.
-\end{compactitem}
-
-We focus on the second reason by analyzing the simplest poker situations, as we mentioned above. 
+Poker is an interesting game to study for several reasons. First, it is a multi-billion dollar industry, e.g. PokerStars.com was purchased for almost \$5 billion in 2014 \cite{PokerStarsAcquired} and is only one of hundreds of online poker sites. Second, it is a classical game of logic, deception and mathematics, requiring a basic knowledge of probability and game theory. Third, many consider poker a model game for the development of machine learning, such as the University of Alberta Computer Poker Research Group (CPRG) \cite{SVMPoker}. There is much analysis surrounding poker academically, e.g. CPRG, and commercially, e.g. analytical poker software like Poker Tracker \cite{PokerTracker}. In particular, NLHE tournament poker is the most popular form of poker. It is the format for the World Series of Poker Main Event, the most prestigious poker tournament in the world. 
 
 %------------------------------------------------
 
@@ -135,45 +126,47 @@ One such paper \cite{SVMPoker} describes using a support vector machine to train
 
 Others, such as \cite{holdemml}, have used machine learning to build poker bots. SVMs and other classification algorithms are used to select an action to take based on a given situation.
 
-None of the research we encountered focused on pre-flop strategy. 
+None of the research we encountered focused the the simple situations we have chosen to analyze.
 
 %------------------------------------------------
 
 \section{Design}
 
-\subsection{Sources}
+\subsection{Data Sources}
 We used two sources of hand histories.
 \begin{compactitem}
-\item{Poker Hand History} - Our first source is the private hand history of professional poker player Jaime Staples who kindly agreed to donate his data to us. Jaime Staples is a 23 year old Canadian with six figures of NLHE tournament cashes \cite{JaimeStaples}.
+\item{PokerStars Hand History} - Our first source is the private hand history of professional poker player Jaime Staples who kindly agreed to donate his data to us. Jaime Staples is a 23 year old Canadian with six figures of NLHE tournament cashes \cite{JaimeStaples} and is sponsored by PokerStars. This hand history is about 700MB of raw data.
 \item{IRC Poker Database} - Our second source is seven years of poker data scraped from a dozen IRC poker channels. It was compiled and made available by the CPRG \cite{IRCDatabase}. 
 We only used the data from the no limit hold'em and  no limit hold'em tournament channels, resulting in 3.8 million poker hands (876MB of raw data). 
 \end{compactitem}
 
-\subsection{Feature Vectors}
+\subsection{Labels and Feature Vectors}
+
 Our feature vectors consists of 12 features: \newline
-\indent - action taken (fold or call/raise) \newline
-\indent - number of players, assumed to be 9\newline
-\indent - player's position\newline
-\indent - all players' bankrolls\newline
-\indent - the strength of the player's cards\newline
+\indent - number of players in the hand\newline
+\indent - player's position \newline
+\indent - players' stacks \newline
+\indent - player's hand strength \newline
 
-One of our biggest challenges was finding a feature vector that was possible based on both of our datasets. For example, the Jamie Staples data showed the player's hands at all times whereas the IRC data did not. Similarly, the Jamie Staples data showed the potsize at the flop whereas the IRC data did not.  
-Furthermore, while Jamie Staples is a successful poker player \cite{JaimeStaples} the IRC database provided no guarantee about the skill levels of the players. Since our goal was to analyze \textit{successful} poker strategy we chose to use all of Jaime Staples' hand histories but only the IRC players' actions when a player won a hand. Since we only aimed to analyze first to act strategy we only kept data when a player folded before any calls or raises, or was first to call or raise. As an example, consider the following sequence of pre-flop actions: 
+The associated label was then either 1 (Play) or 0 (Fold) depending on the action taken by the player in question. We designed the feature vectors in this way since this represents the basic information available to a player, i.e. the feature vectors are from a single player's perspective and so we only know that player's cards. Call this player the active player. Thus the position and hand strength features are with respect to the active player. We can use this representation because we have restricted ourselves to situations in which no other player has bet or raised before the player in question. This means that players in earlier position have all folded and so we do not need to account for other actions. If we did not limit ourselves to this case, our analysis would become much more complicated and these features would likely be inadequate. We will discuss this further in our Future Work section.
 
-Pos1 - big blind\newline
-\indent Pos2 - little blind\newline
-\indent Pos3 - fold\newline
-\indent Pos4 - fold\newline
-\indent Pos5 - fold\newline
-\indent Pos6 - call\newline
-\indent Pos7 - raise\newline
-\indent Pos8 - call\newline
-\indent Pos9 - fold
+The feature vectors were normalized in a slightly peculiar way due to the nature of the data. The number of players was normalized by division by 9 as there at most 9 players in a hand. The player's position is the clockwise distance from the button, which ranges from 0 to 8 and was normalized by division by 8. The players' stacks (numbers of chips) are in clockwise order around the table starting with the player in question and are normalized by division by the largest stack. Hand strength is the probability that the active player's hand wins against a single random hand and so lies between 0 and 1.
 
-For this scenario we would have created a feature vector for positions 3, 4, 5, 6. Positions 3, 4, 5 would be kept since they all folded before any other players called or raised, and position 6 would be kept since it was the first to call or raise. 
-Positions 1 and 2 are always discarded since big and little blind are mandatory poker bets rather than voluntary actions and positions 7-9 would be discarded since they were not first to act. 
+One of our biggest challenges was finding a feature vector that was possible based to produce from both of our datasets. For instance, Jaime Staples' hands contained which cards he was dealt at the beginning of the hand and so the active player's cards were known regardless of the outcome. However the IRC hands are recorded by an observer and so a player's hand is only revealed if it is revealed at showdown at the conclusion of the hand. Thus we could only retrieve positive examples (if the active player chose to play the hand as opposed to fold) from the IRC data since if the player folded at any point then their hand would never be revealed to the observer. Similarly the Jamie Staples data contained all information about a hand whereas the IRC data only showed summary information about the hand's conclusion. Another concern is while Jamie Staples is a successful professional \cite{JaimeStaples} the IRC database provided no guarantee about the skill levels of the players
 
-\subsection{Design}
+In light of these limitations as well as the complexity in developing a comprehensive analysis of poker strategy, we confined ourselves to the simplest poker situations described previously, in which the active player has the opportunity to make the first bet and is not in the blinds. It is a bit of a special case when a player is in the blinds and so chose to ignore these hands for simplicity's sake. As an example, consider the following sequence of actions:\\
+\indent Position 1 - big blind\\
+\indent Position 2 - little blind\\
+\indent Position 3 - fold\\
+\indent Position 4 - fold\\
+\indent Position 5 - fold\\
+\indent Position 6 - call\\
+\indent Position 7 - raise\\
+\indent Position 8 - call\\
+\indent Position 9 - fold\\
+If the active player was in position 3, 4, 5, or 6 then we would use the hand. Positions 3, 4, and 5 fulfill our criteria because the player has the opportunity to make the first bet even though they choose to fold. Position 6 also fulfills our criteria because the play makes the first bet. A bet has been made (by the player in position 6) before the players in positions 7,8, and 9 have had a chance to bet and so these situations would be excluded. Positions 1 and 2 are always excluded because they correspond to the blinds.
+
+\subsection{Map Reduce Jobs}
 
 \begin{figure}[H]
   \centering
@@ -182,7 +175,7 @@ Positions 1 and 2 are always discarded since big and little blind are mandatory 
   \label{fig:Data flow}
 \end{figure}
 
-Using map reduce, we standardized both of our data sets to the common format described in the previous section and merged them. Next, we ran the joint dataset into another map reduce that translated the player's cards, e.g. Ac3s, into a hand strength value based on a table of poker hand probabilities. We used the resulting data set to train an SVM using Spark and to analyze the data using Hive. 
+Using map reduce, we extracted feature vectors from both data sets and merged them. At this point we the hand strength feature was simply the string representation of the cards, e.g. AsKs for the Ace of Spades and the King of Spades. Next, we ran the combined dataset into another map reduce that translated the string hand representation into the probability that it wins against a single random hand. We used the resulting feature vectors set to train a SVMs using Spark and to summarize and analyze the data using Hive. 
 
 %------------------------------------------------
 
@@ -190,7 +183,7 @@ Using map reduce, we standardized both of our data sets to the common format des
 
 \subsection{Position and hand strength}
 
-By manipulating the data in Hive, we noticed a clear relationship between position, hand strength, and whether or not to play a hand. Figure 2 shows all of our cleaned data organized by position and hand strength. There are 2 clear observations to be made about our data as a whole: there are significantly more folds than plays and there are fewer of both in the higher positions. Both of these observations, however, are artifacts of our data collection and do not reflect poker strategy. As in the example above, it is possible for one hand of poker data to yield several feature vectors for folding but only one for calling or raising. This explains the larger amount of folding data. And since we only sought to analyze first to act, there is a higher probability of actions occurring in the early positions rather than the latest. This explains the decreasing amount of data as position increases.
+By manipulating the data in Hive, we noticed a clear relationship between position, hand strength, and whether to fold or play a hand. Figure 2 shows all of our cleaned data organized by position and hand strength. There are 2 clear observations to be made about our data as a whole: there are significantly more folds than plays and there are fewer of both in the higher positions. Both of these observations, however, are artifacts of our data collection and do not reflect poker strategy. As in the example above, it is possible for one hand of poker data to yield several feature vectors for folding but only one for calling or raising. This explains the larger amount of folding data. And since we only sought to analyze first to act, there is a higher probability of actions occurring in the early positions rather than the latest. This explains the decreasing amount of data as position increases.
 
 \begin{figure}[H]
   \centering
@@ -204,7 +197,7 @@ To further analyze our data, we divided all the feature vectors by hand strength
 \begin{figure}[H]
   \centering
   \centerline{\includegraphics[width=1.1\columnwidth]{9thDecile.png}}
-   \caption{9thDecile}
+   \caption{9th Decile}
   \label{fig:9thDecile}
 \end{figure}
 
@@ -213,7 +206,7 @@ On the opposite end of the spectrum, the 3rd decile is the worst range of card s
 \begin{figure}[H]
   \centering
   \centerline{\includegraphics[width=1.1\columnwidth]{3rdDecile.png}}
-   \caption{3rdDecile}
+   \caption{3rd Decile}
   \label{fig:3rdDecile}
 \end{figure}
 
@@ -222,30 +215,32 @@ In the middle of the hand strength spectrum, figures \ref{fig:4thDecile}, \ref{f
 \begin{figure}[H]
   \centering
   \centerline{\includegraphics[width=1.1\columnwidth]{4thDecile.png}}
-   \caption{4thDecile}
+   \caption{4th Decile}
   \label{fig:4thDecile}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \centerline{\includegraphics[width=1.1\columnwidth]{5thDecile.png}}
-   \caption{5thDecile}
+   \caption{5th Decile}
   \label{fig:5thDecile}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \centerline{\includegraphics[width=1.1\columnwidth]{6thDecile.png}}
-   \caption{6thDecile}
+   \caption{6th Decile}
   \label{fig:6thDecile}
 \end{figure}
 
-\subsection{Support Vector Machine}
+\subsection{Support Vector Machines}
+
+
 
 \begin{figure}[H]
   \centering
   \centerline{\includegraphics[width=1\columnwidth]{SVM.png}}
-   \caption{SVM Errors}
+   \caption{SVM Training Error}
   \label{fig:SVM}
 \end{figure}
 
@@ -271,7 +266,7 @@ Our data revealed several fundamental poker strategies:
 
 \section{Acknowledgements}
 
-Many thanks to Jaime Staples for sending us his hand histories free of charge and to the University of Alberta Poker Group for collecting the IRC data. 
+Many thanks to Jaime Staples for sending us his hand histories, to the University of Alberta Poker Group for collecting the IRC data, and the NYU HPC for assistance with Spark on Dumbo. 
 
 
 %----------------------------------------------------------------------------------------
