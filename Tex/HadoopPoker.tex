@@ -102,8 +102,8 @@ No Limit Hold 'Em (NLHE) is a fun recreational game for many around the world an
 
 \section{Introduction}
 An online poker site, e.g. PokerStars.com will easily play billions of hands per year and a professional poker player may play hundreds of thousands if not millions of hands per year. Each of these hands is logged as part of what is called a hand history.
-We acquired hand histories to analyze in Hadoop with the intention of developing poker strategy guidelines. Our sources were 10 month of hand histories from a professional poker player and 7 years of hand histories from an IRC poker channel.
-We focused on one of the most popular forms of poker: No Limit Texas Hold 'Em (NHLE) tournaments. One can find a detailed description at \cite{TexasHoldem}. In particular we concerned ourselves with the simplest situations in the game. Poker hands vary significantly in their complexity and so we limited ourselves to the cases in which a player has the opportunity to make the first bet and is not in the blinds. We created feature vector representations of these situations, generated summary statistics, and used support vector machines (SVMs) to predict when a player should play or fold a hand, using the professional player's hand history as the bar for good performance.
+We acquired hand histories to analyze in Hadoop with the intention of developing poker strategy guidelines. Our sources were 10 months of hand histories from a professional poker player and 7 years of hand histories from an IRC poker channel.
+We focused on one of the most popular forms of poker: No Limit Texas Hold 'Em (NHLE) tournaments. One can find a detailed description at \cite{TexasHoldem}. Poker hands vary significantly in their complexity so we limited ourselves to the cases in which a player has the opportunity to make the first bet and is not in the blinds. We created feature vector representations of these situations, generated summary statistics, and used support vector machines (SVMs) to predict when a player should play or fold a hand, using the professional player's hand history as the bar for good performance.
 
 %------------------------------------------------
 
@@ -136,7 +136,7 @@ We only used the data from the no limit hold'em and  no limit hold'em tournament
 
 \subsection{Labels and Feature Vectors}
 
-Our feature vectors consists of 12 features: \newline
+Our feature vectors consist of 12 features: \newline
 \indent - number of players in the hand\newline
 \indent - player's position \newline
 \indent - players' stacks \newline
@@ -146,7 +146,7 @@ The associated label was then either 1 (Play) or 0 (Fold) depending on the actio
 
 The feature vectors were normalized in a slightly peculiar way due to the nature of the data. The number of players was normalized by division by 9 as there at most 9 players in a hand. The player's position is the clockwise distance from the button, which ranges from 0 to 8 and was normalized by division by 8. The players' stacks (numbers of chips) are in clockwise order around the table starting with the player in question and are normalized by division by the largest stack. Hand strength is the probability that the active player's hand wins against a single random hand and so lies between 0 and 1.
 
-One of our biggest challenges was finding a feature vector that was possible based to produce from both of our datasets. For instance, Jaime Staples' hands contained which cards he was dealt at the beginning of the hand and so the active player's cards were known regardless of the outcome. However the IRC hands are recorded by an observer and so a player's hand is only revealed if it is revealed at showdown at the conclusion of the hand. Thus we could only retrieve positive examples (if the active player chose to play the hand as opposed to fold) from the IRC data since if the player folded at any point then their hand would never be revealed to the observer. Similarly the Jamie Staples data contained all information about a hand whereas the IRC data only showed summary information about the hand's conclusion. Another concern is while Jamie Staples is a successful professional \cite{JaimeStaples} the IRC database provided no guarantee about the skill levels of the players
+One of our biggest challenges was finding a feature vector that was possible based to produce from both of our datasets. For instance, Jaime Staples' hands contained which cards he was dealt at the beginning of the hand and so the active player's cards were known regardless of the outcome. However the IRC hands are recorded by an observer and so a player's hand is only revealed if it is revealed at showdown at the conclusion of the hand. Thus we could only retrieve positive examples (if the active player chose to play the hand as opposed to fold) from the IRC data since if the player folded at any point then their hand would never be revealed to the observer. Similarly the Jamie Staples data contained all information about a hand whereas the IRC data only showed summary information about the hand's conclusion. Another concern is while Jamie Staples is a successful professional \cite{JaimeStaples} the IRC database provided no guarantee about the skill levels of the players.
 
 In light of these limitations as well as the complexity in developing a comprehensive analysis of poker strategy, we confined ourselves to the simplest poker situations described previously, in which the active player has the opportunity to make the first bet and is not in the blinds. It is a bit of a special case when a player is in the blinds and so chose to ignore these hands for simplicity's sake. As an example, consider the following sequence of actions:\\
 \indent Position 1 - big blind\\
