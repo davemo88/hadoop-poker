@@ -175,7 +175,7 @@ If the active player was in position 3, 4, 5, or 6 then we would use the hand. P
   \label{fig:Data flow}
 \end{figure}
 
-Using map reduce, we extracted feature vectors from both data sets and merged them. At this point we the hand strength feature was simply the string representation of the cards, e.g. AsKs for the Ace of Spades and the King of Spades. Next, we ran the combined dataset into another map reduce that translated the string hand representation into the probability that it wins against a single random hand. We used the resulting feature vectors set to train a SVMs using Spark and to summarize and analyze the data using Hive. 
+Using MapReduce, we extracted feature vectors from both data sets and merged them. At this point we the hand strength feature was simply the string representation of the cards, e.g. AsKs for the Ace of Spades and the King of Spades. Next, we ran the combined dataset into another MapReduce that translated the string hand representation into the probability that it wins against a single random hand. We used the resulting final feature vectors set to train SVMs using Spark and to summarize and analyze the data using Hive. 
 
 %------------------------------------------------
 
@@ -235,7 +235,9 @@ In the middle of the hand strength spectrum, figures \ref{fig:4thDecile}, \ref{f
 
 \subsection{Support Vector Machines}
 
+We used Spark to train linear and second degree polynomial kernel SVMs to do binary classification of feature vectors, the two classes being Play (1) and Fold(0). We ranged the regularization parameter $\lambda$ between all odd powers of $2$ between $2^-31$ and $2^3$. The SVM algorithm in Spark uses stochastic gradient descent (SGD). Each SVM was trained 50 iterations of SGD with step size 1 and using the entire sample for each mini-batch. These are the usual parameters of SGD that determine how many examples are used to compute the gradient at each iteration (mini-batch size) and how far to move in the direction of the gradient (step size) before computing it again in the next iteration. We established this range experimentally which suggested that there would be little change in training error outside outside this range. Our best training errors were with small $\lambda$ although none were excellent.
 
+The linear SVM performed best with very little regularization and the degree two polynomial kernel performed best with medium regularization, relatively speaking. Both performed poorly with large regularization. However our results are encouraging since we did manage to have some improvement over random guessing with very simple features. The feature space for the linear SVM is the same as feature vectors described previously and only have dimension 12. The polynomial kernel had dimension 23 feature space which is still relatively low and could be much, much larger for poker games. See figure \ref{fig:SVM} for a graphical comparison.
 
 \begin{figure}[H]
   \centering
@@ -248,17 +250,19 @@ In the middle of the hand strength spectrum, figures \ref{fig:4thDecile}, \ref{f
 
 \section{Future Work}
 
-We should extend this analysis to post flop strategy. 
+This work could be improved in several ways. First, we could use a far larger poker data set of hand histories by professional players. Even though Jaime's hands numbered in the hundreds of thousands, we could have analyzed many more. This data was better for our purposes since the hands were played by a successful professional and they contained both positive and negative examples, whereas the data from IRC contained only positive examples and the players were of dubious quality. We could also design richer features. We chose a simple feature set here as a starting point, but we may be able to have much better classification results if we had better features. Similarly we could improve the SVM work with existing features by experimenting with other more complex kernels. We should also compare the SVM results with other classification algorithms such as logistic regression or k-nearest neighbor.
 
 %------------------------------------------------
 
 \section{Conclusion}
 
-Our data revealed several fundamental poker strategies:
+Our data revealed several fundamental poker strategies when the player has the opportunity to make the first bet and is not in the blinds:
 \begin{compactitem}
-\item{} Always play hands in the 9th hand strength decile. 
-\item{} Almost always fold hands in the 3rd decile but maintain a small ratio of plays depending on your position: 0.03\% plays in the 3rd position and 0.005\% plays in positions7, 8, 9. 
-\item{}Be more conservative with hand strength in the early positions. For example, in the 6th hand strength decile, hands should be played 64\% of the time in the 3rd position but 98\% of the time in 9th position.
+\item{} Always play the best hands, e.g. those in the 7th, 8th, and 9th deciles, regardless of position. 
+\item{} Almost always fold the worst hands, e.g. those in the 3rd and 4th deciles, especially in the lower positions.
+\item{}Be more conservative with hand strength in the early positions. For example, sample hands in 6th hand strength decile were played 64\% of the time in the 3rd position but 98\% of the time in 9th position.
+
+Furthermore, our results were encouraging in designing classifiers than can predict the correct actions to take in NLHE poker tournaments since we were able to do better than random using both modest features and modest number of examples.
 \end{compactitem}
 
 
